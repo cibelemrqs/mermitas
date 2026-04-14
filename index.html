@@ -6,6 +6,7 @@
 <title>Mermita's — Marmita Fitness Caseira</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root {
   --g900:#1A4A2E; --g800:#1D5C3A; --g700:#246B43; --g600:#2D8050;
@@ -424,10 +425,11 @@ footer{background:var(--g900);color:var(--g100);padding:48px 5vw 28px}
       <button class="auth-tab" id="tab-cad" onclick="setTab('cad')">Criar conta</button>
     </div>
     <div id="form-ent">
-      <label class="fg-label">Nome</label>
-      <input class="fginput" type="text" id="ln" placeholder="Seu nome completo">
-      <label class="fg-label">WhatsApp</label>
-      <input class="fginput" type="tel" id="lt" placeholder="(48) 9 9999-9999">
+      <label class="fg-label">E-mail</label>
+      <input class="fginput" type="email" id="ln" placeholder="seu@email.com">
+      <label class="fg-label">Senha</label>
+      <input class="fginput" type="password" id="lt" placeholder="Sua senha">
+      <div id="login-err" style="display:none;color:#c0392b;font-size:12px;margin:-4px 0 8px;font-weight:600"></div>
       <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px" onclick="doLogin()">Entrar e fazer pedido →</button>
       <p style="text-align:center;font-size:12px;color:var(--txt3);margin-top:14px">Ainda não tem conta? <a href="#" onclick="setTab('cad')" style="color:var(--g700);font-weight:700">Criar conta grátis</a></p>
     </div>
@@ -436,14 +438,17 @@ footer{background:var(--g900);color:var(--g100);padding:48px 5vw 28px}
       <input class="fginput" type="text" id="cn" placeholder="Seu nome completo">
       <div class="fg2">
         <div><label class="fg-label">WhatsApp</label><input class="fginput" type="tel" id="ct" placeholder="(48) 9 9999-9999"></div>
-        <div><label class="fg-label">E-mail (opcional)</label><input class="fginput" type="email" id="ce" placeholder="seu@email.com"></div>
+        <div><label class="fg-label">E-mail</label><input class="fginput" type="email" id="ce" placeholder="seu@email.com"></div>
       </div>
+      <label class="fg-label">Senha</label>
+      <input class="fginput" type="password" id="csenha" placeholder="Mínimo 6 caracteres">
       <span class="fsec">Endereço de entrega</span>
       <label class="fg-label">Região / Zona</label>
       <select class="fginput" id="cz" onchange="updZona()"></select>
       <div class="fghint" id="zona-hint"></div>
       <label class="fg-label">Endereço completo</label>
       <input class="fginput" type="text" id="cend" placeholder="Rua, número, complemento, bairro">
+      <div id="cad-err" style="display:none;color:#c0392b;font-size:12px;margin:-4px 0 8px;font-weight:600"></div>
       <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px;margin-top:4px" onclick="doCad()">Criar conta e montar pedido →</button>
     </div>
     <p style="text-align:center;margin-top:16px"><button style="background:none;border:none;font-size:13px;color:var(--txt3);cursor:pointer;font-family:'Nunito',sans-serif" onclick="showScreen('home')">← Voltar ao site</button></p>
@@ -844,6 +849,24 @@ loadZonas();
 buildZonaMaps();
 const ALL={};Object.values(CDP).forEach(a=>a.forEach(i=>ALL[i.id]=i));
 
+/* ── Supabase ── */
+const SUPA_URL='https://tetimspqqcoblbipexuv.supabase.co';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRldGltc3BxcWNvYmxiaXBleHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTM4NDQsImV4cCI6MjA5MTc2OTg0NH0.UKJcgtuy_E8dLzwZMVrxJSHNpdHOheUNAWZl8Zhl9_Y';
+const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
+
+/* restaura sessão ao carregar */
+sb.auth.getSession().then(({data:{session}})=>{
+  if(session) _loadProfile(session.user.id);
+});
+
+async function _loadProfile(uid){
+  const{data}=await sb.from('clientes').select('*').eq('id',uid).single();
+  if(data){
+    user={id:uid,nome:data.nome,tel:data.tel,email:data.email||'',zona:data.zona,zonaNome:data.zona_nome,endereco:data.endereco,taxa:data.taxa};
+    updateNav();
+  }
+}
+
 let user=null,marmitas=[];
 /* carbo e prot agora são arrays — seleção múltipla livre
    esp/sopa/assado são mutuamente exclusivos e bloqueiam carbo+prot
@@ -884,20 +907,43 @@ function updZona(){
   const s=$('cz'),o=s.options[s.selectedIndex],t=o.dataset.t;
   $('zona-hint').textContent=t!==undefined?(+t===0?'✓ Retirada gratuita no Ribeirão da Ilha':'Taxa de entrega: R$ '+t+',00'):'';
 }
-function doLogin(){
-  const n=$('ln').value.trim(),t=$('lt').value.trim();
-  if(!n||!t){toast('Preencha nome e WhatsApp');return}
-  user={nome:n,tel:t,zona:'',zonaNome:'A informar',endereco:'A informar',taxa:0};
-  updateNav();showScreen('pedido');toast('Bem-vinda de volta, '+n.split(' ')[0]+'! 👋');
+async function doLogin(){
+  const email=$('ln').value.trim(),senha=$('lt').value;
+  const errEl=$('login-err');
+  errEl.style.display='none';
+  if(!email||!senha){toast('Preencha e-mail e senha');return}
+  const btn=document.querySelector('#form-ent .btn-p');
+  btn.textContent='Entrando…';btn.disabled=true;
+  const{data,error}=await sb.auth.signInWithPassword({email,password:senha});
+  btn.textContent='Entrar e fazer pedido →';btn.disabled=false;
+  if(error){errEl.textContent='E-mail ou senha incorretos.';errEl.style.display='block';return}
+  await _loadProfile(data.user.id);
+  showScreen('pedido');toast('Bem-vinda de volta, '+user.nome.split(' ')[0]+'! 👋');
 }
-function doCad(){
-  const n=$('cn').value.trim(),t=$('ct').value.trim(),z=$('cz').value,e=$('cend').value.trim();
+async function doCad(){
+  const n=$('cn').value.trim(),t=$('ct').value.trim(),email=$('ce').value.trim();
+  const senha=$('csenha').value,z=$('cz').value,e=$('cend').value.trim();
+  const errEl=$('cad-err');errEl.style.display='none';
   if(!n||!t){toast('Preencha nome e WhatsApp');return}
+  if(!email){toast('Preencha o e-mail');return}
+  if(senha.length<6){toast('Senha precisa ter ao menos 6 caracteres');return}
   if(!z){toast('Selecione sua região');return}
-  user={nome:n,tel:t,email:$('ce').value.trim(),zona:z,zonaNome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0};
+  const btn=document.querySelector('#form-cad .btn-p');
+  btn.textContent='Criando conta…';btn.disabled=true;
+  const{data,error}=await sb.auth.signUp({email,password:senha});
+  if(error){btn.textContent='Criar conta e montar pedido →';btn.disabled=false;errEl.textContent=error.message;errEl.style.display='block';return}
+  const uid=data.user.id;
+  await sb.from('clientes').insert({id:uid,nome:n,tel:t,zona:z,zona_nome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0});
+  btn.textContent='Criar conta e montar pedido →';btn.disabled=false;
+  user={id:uid,nome:n,tel:t,email,zona:z,zonaNome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0};
   updateNav();showScreen('pedido');toast('Conta criada! Bem-vinda, '+n.split(' ')[0]+' 🎉');
 }
-function doLogout(){user=null;marmitas=[];cupomAtivo=null;Object.assign(cur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});updateNav();showScreen('home')}
+async function doLogout(){
+  await sb.auth.signOut();
+  user=null;marmitas=[];cupomAtivo=null;
+  Object.assign(cur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});
+  updateNav();showScreen('home');
+}
 
 /* cardápio público */
 function filterCat(c,b){
@@ -1188,7 +1234,7 @@ function renderResumo(){
   $('wpp-prev').style.display='block';$('wpp-prev').textContent=txt;
 }
 function copyOrc(){navigator.clipboard.writeText(buildTxt()).then(()=>toast('Orçamento copiado ✓'))}
-function sendWpp(){
+async function sendWpp(){
   if(!marmitas.length){toast('Monte ao menos uma marmita');return}
   const taxa=user?.taxa||0,desc=cupomAtivo?.valor||0;
   const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
@@ -1201,14 +1247,27 @@ function sendWpp(){
     cupom:cupomAtivo?{codigo:cupomAtivo.codigo,valor:cupomAtivo.valor}:null,
     subtotal:sub,total,extras:[]
   };
-  const saved=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
-  saved.unshift(order);
-  localStorage.setItem('mermitas_orders',JSON.stringify(saved));
+  await sb.from('pedidos').insert({
+    id:order.id,
+    user_id:user?.id||null,
+    client_nome:order.client.nome,
+    client_tel:order.client.tel,
+    client_zona:order.client.zona,
+    client_zona_nome:order.client.zonaNome,
+    client_endereco:order.client.endereco,
+    taxa:order.client.taxa,
+    marmitas:order.marmitas,
+    cupom:order.cupom,
+    subtotal:order.subtotal,
+    total:order.total,
+    extras:order.extras,
+    status:'novo'
+  });
   window.open('https://wa.me/5548996107844?text='+encodeURIComponent(buildTxt()),'_blank');
 }
 
 /* perfil */
-function renderPerfil(){
+async function renderPerfil(){
   if(!user)return;
   $('p-av').textContent=user.nome[0].toUpperCase();
   $('p-nome').textContent=user.nome;
@@ -1217,6 +1276,24 @@ function renderPerfil(){
   $('pp-zona').textContent=user.zonaNome||'—';
   $('pp-end').textContent=user.endereco||'—';
   $('pp-taxa').textContent=user.taxa!==undefined?fR(user.taxa):'—';
+  const hist=$('historico');
+  if(hist&&user.id){
+    hist.innerHTML='<p style="font-size:13px;color:var(--txt3)">Carregando…</p>';
+    const{data}=await sb.from('pedidos').select('*').eq('user_id',user.id).order('created_at',{ascending:false});
+    if(!data||!data.length){hist.innerHTML='<p style="font-size:13px;color:var(--txt3)">Nenhum pedido confirmado ainda.</p>';return}
+    hist.innerHTML=data.map(p=>{
+      const dt=new Date(p.created_at).toLocaleDateString('pt-BR');
+      const nm=(p.marmitas||[]).length;
+      const st={novo:'Novo',visto:'Visto',preparo:'Em preparo',entregue:'Entregue'}[p.status]||p.status;
+      return `<div style="border:1px solid var(--borda);border-radius:10px;padding:14px;margin-bottom:10px;background:var(--creme2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+          <span style="font-size:12px;font-weight:800;color:var(--g700)">${dt}</span>
+          <span style="font-size:11px;font-weight:700;color:var(--txt3)">${st}</span>
+        </div>
+        <div style="font-size:13px;font-weight:600;color:var(--txt)">${nm} marmita${nm>1?'s':''} · ${fR(p.total)}</div>
+      </div>`;
+    }).join('');
+  }
 }
 
 /* ═══════════════════════════════════════════
@@ -1231,12 +1308,13 @@ let expandedOrders = new Set();
 /* entry: ?admin na URL */
 if(new URLSearchParams(location.search).get('admin')!==null) showScreen('admin-login');
 
-function doAdminLogin(){
+async function doAdminLogin(){
   const pw=$('admin-pw')?.value||'';
   const err=$('admin-pw-err');
   if(pw===ADMIN_PW){
     adminLogado=true;err.style.display='none';
     showScreen('admin');
+    await loadAdminOrders();
     startAdminRealtime();
     renderAdminOrders();
     renderAdminCupons();
@@ -1262,9 +1340,9 @@ function showAdminTab(tab){
 /* ── realtime ── */
 function startAdminRealtime(){
   stopAdminRealtime();
-  adminInterval=setInterval(()=>{
+  adminInterval=setInterval(async()=>{
     const prev=adminOrders.length;
-    loadAdminOrders();
+    await loadAdminOrders();
     renderAdminOrders();
     if(adminOrders.length>prev) toast('Novo pedido chegou! 🍱');
   },5000);
@@ -1272,12 +1350,22 @@ function startAdminRealtime(){
 function stopAdminRealtime(){clearInterval(adminInterval);}
 
 /* ── storage ── */
-function loadAdminOrders(){
-  adminOrders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
+async function loadAdminOrders(){
+  const{data}=await sb.from('pedidos').select('*').order('created_at',{ascending:false});
+  if(data) adminOrders=data.map(r=>({
+    id:r.id,
+    timestamp:r.created_at,
+    status:r.status,
+    client:{nome:r.client_nome,tel:r.client_tel,zona:r.client_zona,zonaNome:r.client_zona_nome,endereco:r.client_endereco,taxa:r.taxa},
+    marmitas:r.marmitas||[],
+    cupom:r.cupom,
+    subtotal:r.subtotal,
+    total:r.total,
+    extras:r.extras||[]
+  }));
 }
-function persistOrders(orders){
-  localStorage.setItem('mermitas_orders',JSON.stringify(orders));
-  loadAdminOrders();
+async function persistOrders(){
+  /* não usado mais — cada operação vai direto ao Supabase */
 }
 
 /* ── orders render ── */
@@ -1365,28 +1453,27 @@ function toggleOrder(id){
 function toggleExtraForm(id){
   const f=$('ef-'+id);if(f)f.style.display=f.style.display==='none'?'block':'none';
 }
-function cycleStatus(id){
-  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  o.status=ST_NEXT[o.status]||'novo';
-  persistOrders(orders);renderAdminOrders();toast('Status: '+ST_LABEL[o.status]);
+async function cycleStatus(id){
+  const o=adminOrders.find(x=>x.id===id);if(!o)return;
+  const novoStatus=ST_NEXT[o.status]||'novo';
+  await sb.from('pedidos').update({status:novoStatus}).eq('id',id);
+  await loadAdminOrders();renderAdminOrders();toast('Status: '+ST_LABEL[novoStatus]);
 }
-function deleteOrder(id){
+async function deleteOrder(id){
   if(!confirm('Excluir este pedido?'))return;
   expandedOrders.delete(id);
-  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]').filter(o=>o.id!==id);
-  persistOrders(orders);renderAdminOrders();
+  await sb.from('pedidos').delete().eq('id',id);
+  await loadAdminOrders();renderAdminOrders();
 }
-function addExtraToOrder(id){
+async function addExtraToOrder(id){
   const nome=($('ei-n-'+id)?.value||'').trim();
   const g=+($('ei-g-'+id)?.value||0)||null;
   const preco=+($('ei-v-'+id)?.value||0);
   if(!nome){toast('Digite o nome do item');return}
-  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
-  const o=orders.find(x=>x.id===id);if(!o)return;
-  if(!o.extras)o.extras=[];
-  o.extras.push({nome,g,preco});
-  persistOrders(orders);renderAdminOrders();toast('Item adicionado ✓');
+  const o=adminOrders.find(x=>x.id===id);if(!o)return;
+  const extras=[...(o.extras||[]),{nome,g,preco}];
+  await sb.from('pedidos').update({extras}).eq('id',id);
+  await loadAdminOrders();renderAdminOrders();toast('Item adicionado ✓');
 }
 function sendAdminWpp(id){
   const o=adminOrders.find(x=>x.id===id);if(!o)return;
