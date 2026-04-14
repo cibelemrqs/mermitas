@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mermita's — Marmita Fitness Caseira</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Lora:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --g900:#1A4A2E; --g800:#1D5C3A; --g700:#246B43; --g600:#2D8050;
+  --g500:#3A9E63; --g400:#4CAF72; --g300:#80C99A; --g100:#D4EDE0; --g50:#EBF5EE;
+  --creme:#F5F0E8; --creme2:#EDE7D9; --branco:#FFFFFF;
+  --txt:#1C2B22; --txt2:#3D5246; --txt3:#6B8070;
+  --borda:rgba(29,92,58,0.15); --sombra:0 4px 24px rgba(29,92,58,0.10);
+  --r:12px; --r2:20px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--creme);color:var(--txt);font-size:15px;line-height:1.6;min-height:100vh}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+.hide{display:none!important}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 22px;border-radius:40px;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;transition:all .18s;text-decoration:none;white-space:nowrap}
+.btn-p{background:var(--g800);color:#fff}.btn-p:hover{background:var(--g700)}
+.btn-outline{background:transparent;color:var(--g800);border:2px solid var(--g800)}.btn-outline:hover{background:var(--g50)}
+.btn-wpp{background:#25D366;color:#fff}.btn-wpp:hover{background:#1ebe5a}
+.btn-lg{padding:14px 32px;font-size:16px}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.badge-c{background:#E8F4FC;color:#1565A8}.badge-p{background:#F0EBF8;color:#6A3BAA}
+.badge-l{background:#EBF5EE;color:#1D5C3A}.badge-e{background:#FEF4E4;color:#8A5200}
+.badge-s{background:#FDE9E9;color:#A32020}.badge-a{background:#E4F0FF;color:#1A4E8A}
+h1,h2,h3{font-family:'Lora',serif;line-height:1.25}
+h2{font-size:clamp(24px,3.5vw,34px);color:var(--g800);margin-bottom:8px}
+.sec-sub{color:var(--txt3);font-size:15px;margin-bottom:36px}
+
+/* NAV */
+nav{background:var(--g800);padding:0 5vw;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;cursor:pointer}
+.nav-logo-text{font-family:'Lora',serif;font-size:20px;color:#fff;letter-spacing:-.3px}
+.nav-logo-sub{font-size:9px;font-weight:700;letter-spacing:.1em;color:var(--g300);text-transform:uppercase;display:block;line-height:1;margin-top:-2px}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{background:transparent;border:none;color:rgba(255,255,255,.8);font-family:'Nunito',sans-serif;font-size:14px;font-weight:600;padding:7px 14px;border-radius:8px;cursor:pointer;transition:.15s}
+.nav-btn:hover{color:#fff;background:rgba(255,255,255,.1)}
+.nav-btn-cta{background:rgba(255,255,255,.15);color:#fff!important;border:1px solid rgba(255,255,255,.25)}
+.nav-btn-cta:hover{background:rgba(255,255,255,.25)!important}
+.nav-user{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.12);border-radius:20px;padding:4px 14px 4px 4px;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+.nav-user-av{width:28px;height:28px;border-radius:50%;background:var(--g400);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:var(--g800)}
+
+/* SCREENS */
+.screen{display:none}.screen.active{display:block}
+
+/* HERO */
+.hero-wrap{background:var(--g800);padding:0 5vw}
+.hero-inner{max-width:1060px;margin:0 auto;padding:80px 0 72px;display:grid;grid-template-columns:1fr 400px;gap:56px;align-items:center}
+.hero-eyebrow{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--g300);margin-bottom:16px}
+.hero-h1{font-family:'Lora',serif;font-size:clamp(32px,4.5vw,50px);color:#fff;line-height:1.18;margin-bottom:20px}
+.hero-h1 em{color:var(--g400);font-style:italic}
+.hero-desc{color:var(--g100);font-size:16px;line-height:1.75;margin-bottom:32px;max-width:440px}
+.hero-btns{display:flex;gap:12px;flex-wrap:wrap}
+.hero-card{background:var(--branco);border-radius:var(--r2);padding:28px;border:1px solid var(--g100)}
+.hero-card-title{font-family:'Lora',serif;font-size:16px;color:var(--g800);margin-bottom:18px;display:flex;align-items:center;gap:8px}
+.step{display:flex;align-items:flex-start;gap:12px;margin-bottom:16px}
+.step:last-child{margin-bottom:0}
+.step-n{min-width:26px;height:26px;border-radius:50%;background:var(--g800);color:#fff;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.step-t strong{display:block;font-size:14px;font-weight:700;color:var(--txt)}
+.step-t{font-size:13px;color:var(--txt2);line-height:1.5}
+.hero-note{font-size:11px;color:var(--txt3);border-top:1px solid var(--borda);padding-top:14px;margin-top:18px}
+@media(max-width:768px){.hero-inner{grid-template-columns:1fr}.hero-card{display:none}}
+
+/* SOBRE */
+.sobre-wrap{background:var(--branco);padding:72px 5vw}
+.sobre-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;max-width:1060px;margin-left:auto;margin-right:auto}
+.sc{background:var(--creme);border-radius:var(--r2);padding:28px 24px;border:1px solid var(--borda)}
+.sc-icon{width:44px;height:44px;background:var(--g50);border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:16px}
+.sc h3{font-size:16px;font-weight:800;color:var(--g800);margin-bottom:6px}
+.sc p{font-size:13px;color:var(--txt3);line-height:1.65}
+@media(max-width:640px){.sobre-grid{grid-template-columns:1fr}}
+
+/* CARDAPIO PUBLICO */
+.cdp-wrap{background:var(--creme);padding:72px 5vw}
+.cat-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:28px}
+.cat-tab{padding:8px 18px;border-radius:20px;border:1.5px solid var(--borda);background:var(--branco);font-size:13px;font-weight:700;color:var(--txt2);cursor:pointer;transition:.15s}
+.cat-tab:hover,.cat-tab.active{background:var(--g800);color:#fff;border-color:var(--g800)}
+.cdp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px}
+.mc{background:var(--branco);border-radius:var(--r);border:1px solid var(--borda);padding:16px;transition:box-shadow .15s}
+.mc:hover{box-shadow:var(--sombra)}
+.mc-name{font-size:14px;font-weight:700;color:var(--txt);line-height:1.35}
+.mc-desc{font-size:11px;color:var(--txt3);line-height:1.5;margin-top:4px}
+.mc-foot{display:flex;align-items:center;justify-content:space-between;margin-top:10px}
+.mc-qty{font-size:11px;color:var(--txt3)}
+.mc-price{font-size:17px;font-weight:800;color:var(--g700)}
+.cdp-cta{background:var(--g50);border-radius:var(--r2);padding:28px 32px;text-align:center;margin-top:28px;border:1.5px dashed var(--g300)}
+.cdp-cta p{color:var(--txt2);margin-bottom:16px;font-size:15px}
+
+/* ENTREGA */
+.ent-wrap{background:var(--g800);padding:72px 5vw}
+.zonas{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin-top:8px;max-width:1060px}
+.zona{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);padding:20px;text-align:center}
+.zona h4{color:#fff;font-size:15px;font-weight:700;margin-bottom:6px}
+.zona-p{font-size:24px;font-weight:800;color:var(--g400);margin-bottom:2px}
+.zona-s{font-size:12px;color:rgba(255,255,255,.55)}
+
+/* FOOTER */
+footer{background:var(--g900);color:var(--g100);padding:48px 5vw 28px}
+.fg{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:2fr 1fr 1fr;gap:48px;margin-bottom:36px}
+.fb{font-family:'Lora',serif;font-size:22px;color:#fff;margin-bottom:4px}
+.fbs{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--g300);margin-bottom:12px}
+.fd{font-size:13px;color:rgba(255,255,255,.55);line-height:1.8}
+.fc h4{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--g300);margin-bottom:14px}
+.fc a,.fc p{font-size:13px;color:rgba(255,255,255,.7);text-decoration:none;display:block;margin-bottom:8px;line-height:1.6}
+.fc a:hover{color:#fff}
+.fbot{max-width:1060px;margin:0 auto;padding-top:24px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.35);flex-wrap:wrap;gap:6px}
+@media(max-width:640px){.fg{grid-template-columns:1fr}}
+
+/* AUTH */
+.auth-wrap{min-height:100vh;background:var(--g800);display:flex;align-items:center;justify-content:center;padding:40px 20px}
+.auth-box{background:var(--branco);border-radius:var(--r2);padding:40px;max-width:440px;width:100%}
+.auth-logo{text-align:center;margin-bottom:28px}
+.auth-logo h2{font-family:'Lora',serif;font-size:24px;color:var(--g800);margin-top:12px}
+.auth-logo p{font-size:13px;color:var(--txt3);margin-top:3px}
+.auth-tabs{display:flex;background:var(--creme);border-radius:10px;padding:4px;margin-bottom:24px}
+.auth-tab{flex:1;padding:8px;border:none;background:transparent;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;color:var(--txt3);cursor:pointer;border-radius:7px;transition:.15s}
+.auth-tab.active{background:var(--branco);color:var(--g800);box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg-label{font-size:11px;font-weight:700;color:var(--txt2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.fginput{width:100%;font-family:'Nunito',sans-serif;font-size:14px;padding:11px 14px;border:1.5px solid var(--borda);border-radius:10px;background:var(--creme);color:var(--txt);transition:.15s;margin-bottom:14px}
+.fginput:focus{outline:none;border-color:var(--g400);background:#fff}
+.fghint{font-size:11px;color:var(--txt3);margin-top:-10px;margin-bottom:10px}
+.fsec{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);padding:16px 0 12px;border-top:1px solid var(--borda);margin-top:6px;display:block}
+
+/* PEDIDO */
+.pedido-layout{display:grid;grid-template-columns:1fr 340px;min-height:calc(100vh - 64px)}
+.pedido-main{padding:28px 32px;background:var(--creme)}
+.pedido-side{background:var(--branco);border-left:1px solid var(--borda);padding:24px;position:sticky;top:64px;height:calc(100vh - 64px);overflow-y:auto}
+@media(max-width:820px){.pedido-layout{grid-template-columns:1fr}.pedido-side{position:static;height:auto;border-left:none;border-top:1px solid var(--borda)}}
+
+.p-meta{display:flex;gap:10px;margin-bottom:24px;flex-wrap:wrap;align-items:flex-end}
+.p-meta-f{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--txt3);font-weight:600}
+.p-meta-f input,.p-meta-f select{font-family:'Nunito',sans-serif;font-size:13px;font-weight:600;padding:7px 11px;border:1.5px solid var(--borda);border-radius:8px;background:var(--branco);color:var(--txt);min-width:130px}
+.p-meta-f input:focus,.p-meta-f select:focus{outline:none;border-color:var(--g400)}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:20px;min-height:36px}
+.chip{display:flex;align-items:center;gap:7px;background:var(--branco);border:1px solid var(--borda);border-radius:10px;padding:6px 10px;cursor:pointer;transition:.12s}
+.chip:hover{border-color:var(--g400)}
+.chip-n{font-size:11px;font-weight:800;color:var(--g700);min-width:20px}
+.chip-name{font-weight:700;color:var(--txt);font-size:12px;line-height:1.3}
+.chip-price{font-size:11px;color:var(--txt3)}
+.chip-del{color:var(--txt3);font-size:13px;padding:0 2px;border:none;background:none;cursor:pointer;line-height:1}
+.chip-del:hover{color:#c0392b}
+.chip-empty{font-size:13px;color:var(--txt3);font-style:italic}
+
+/* builder box */
+.bb{background:var(--branco);border-radius:var(--r2);border:1px solid var(--borda);padding:24px;margin-bottom:20px}
+.bb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:1px solid var(--borda)}
+.bb-num{font-family:'Lora',serif;font-size:20px;color:var(--g800)}
+.bb-sub{font-size:12px;color:var(--txt3);margin-top:2px}
+.slot{margin-bottom:18px}
+.slot-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px;display:flex;align-items:center;gap:7px}
+.slot-opt{font-size:10px;color:var(--txt3);font-weight:600;text-transform:none;letter-spacing:0}
+.igrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:6px}
+.igrid-w{display:grid;grid-template-columns:repeat(auto-fill,minmax(198px,1fr));gap:6px}
+.item{background:var(--creme);border:1.5px solid transparent;border-radius:10px;padding:10px 12px;cursor:pointer;transition:all .12s}
+.item:hover{border-color:var(--g300);background:var(--g50)}
+.item.sel{border-color:var(--g700);background:var(--g50);cursor:default}
+.item.sel .iname{color:var(--g800)}
+.iname{font-size:12.5px;font-weight:700;color:var(--txt);line-height:1.3}
+.idesc{font-size:10px;color:var(--txt3);margin-top:2px}
+.ibase{font-size:11px;color:var(--txt3);margin-top:2px}
+.ibase-price{font-size:13px;font-weight:700;color:var(--g700);margin-top:3px}
+.ictl{display:none;margin-top:10px;padding-top:10px;border-top:1px solid rgba(29,92,58,.12)}
+.item.sel .ictl{display:block}
+.ctl-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.ctl-lbl{font-size:10px;font-weight:700;color:var(--g700);text-transform:uppercase;letter-spacing:.04em;min-width:38px}
+.ctl-inp{font-family:'Nunito',sans-serif;width:68px;font-size:13px;font-weight:700;padding:4px 8px;border:1.5px solid var(--g400);border-radius:8px;background:#fff;color:var(--txt);text-align:center}
+.ctl-inp:focus{outline:none;border-color:var(--g700)}
+.icalc{font-size:19px;font-weight:800;color:var(--g800);line-height:1}
+.icalc-base{font-size:10px;color:var(--g400);font-weight:600;margin-top:2px}
+.idesel{background:none;border:none;color:var(--txt3);font-size:11px;cursor:pointer;padding:0;font-family:'Nunito',sans-serif;margin-top:6px;display:block;text-decoration:underline}
+.idesel:hover{color:#c0392b}
+.item.dimmed{opacity:.38;cursor:not-allowed;pointer-events:none}
+.item.dimmed .iname{color:var(--txt3)}
+.divider{border:none;border-top:1px solid var(--borda);margin:18px 0}
+
+/* preview */
+.bprev{background:var(--creme);border-radius:var(--r);padding:16px;margin-top:18px}
+.bprev-title{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:10px}
+.prev-row{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding:5px 0;border-bottom:1px solid var(--borda)}
+.prev-row:last-of-type{border-bottom:none}
+.prev-name{color:var(--txt);flex:1;font-weight:600;line-height:1.3}
+.prev-g{font-size:11px;color:var(--txt3);margin:0 8px}
+.prev-p{font-weight:800;color:var(--g700);min-width:50px;text-align:right}
+.prev-total{display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:10px;border-top:2px solid var(--borda)}
+.prev-tlabel{font-size:12px;color:var(--txt3);font-weight:700}
+.price-inp{font-family:'Nunito',sans-serif;font-size:20px;font-weight:800;color:var(--g800);width:90px;border:1.5px solid var(--g400);border-radius:8px;padding:4px 8px;text-align:right;background:#fff}
+.price-inp:focus{outline:none;border-color:var(--g700)}
+.bb-actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+
+/* sidebar */
+.side-title{font-family:'Lora',serif;font-size:18px;color:var(--g800);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+.side-empty{font-size:13px;color:var(--txt3);font-style:italic;padding:16px 0}
+.sm{background:var(--creme);border-radius:10px;padding:12px 14px;margin-bottom:10px;border:1px solid var(--borda)}
+.sm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.sm-num{font-size:11px;font-weight:800;color:var(--g700);text-transform:uppercase}
+.sm-price{font-size:16px;font-weight:800;color:var(--g800)}
+.sm-del{background:none;border:none;color:var(--txt3);cursor:pointer;font-size:13px;padding:0}
+.sm-del:hover{color:#c0392b}
+.sm-items{font-size:12px;color:var(--txt2);line-height:1.85}
+.side-tots{margin-top:16px;padding-top:16px;border-top:1px solid var(--borda)}
+.tot-row{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;color:var(--txt2)}
+.tot-row.grand{font-size:17px;font-weight:800;color:var(--g800);padding-top:10px;margin-top:6px;border-top:2px solid var(--borda)}
+.side-inp{font-family:'Nunito',sans-serif;width:80px;font-size:13px;font-weight:700;padding:4px 8px;border:1.5px solid var(--borda);border-radius:6px;background:#fff;color:var(--txt);text-align:right}
+.side-inp:focus{outline:none;border-color:var(--g400)}
+.side-acts{margin-top:16px;display:flex;flex-direction:column;gap:8px}
+
+/* RESUMO */
+.res-box{max-width:680px;margin:0 auto}
+.res-head{background:var(--g800);border-radius:var(--r2) var(--r2) 0 0;padding:28px 32px;color:#fff}
+.res-head h2{color:#fff;font-size:22px;margin-bottom:4px}
+.res-head p{color:var(--g100);font-size:13px}
+.res-body{background:var(--branco);padding:24px 32px}
+.res-client{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--borda);font-size:13px}
+.rcl{font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:2px}
+.rcv{font-weight:700;color:var(--txt)}
+.res-m{padding:14px 0;border-bottom:1px solid var(--borda)}
+.res-m-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.res-m-num{font-size:12px;font-weight:800;color:var(--g700);text-transform:uppercase;letter-spacing:.04em}
+.res-m-price{font-size:17px;font-weight:800;color:var(--g800)}
+.res-m-items{font-size:12px;color:var(--txt3);line-height:1.9}
+.res-m-item::before{content:"·  "}
+.res-tots{padding-top:20px}
+.res-tr{display:flex;justify-content:space-between;font-size:14px;padding:5px 0;color:var(--txt2)}
+.res-tr.grand{font-size:20px;font-weight:800;color:var(--g800);padding-top:14px;margin-top:10px;border-top:2px solid var(--borda)}
+.res-foot{background:var(--creme);border-radius:0 0 var(--r2) var(--r2);padding:20px 32px;display:flex;gap:12px;flex-wrap:wrap;border-top:1px solid var(--borda)}
+#wpp-prev{background:var(--creme);border-radius:var(--r);padding:18px;font-family:'Courier New',monospace;font-size:12px;line-height:1.9;white-space:pre-wrap;color:var(--txt);border:1px solid var(--borda);margin-top:20px;word-break:break-word}
+
+/* PERFIL */
+.perf-head{background:var(--g800);border-radius:var(--r2);padding:28px 32px;display:flex;align-items:center;gap:20px;margin-bottom:20px;color:#fff}
+.perf-av{width:56px;height:56px;border-radius:50%;background:var(--g400);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--g800);flex-shrink:0}
+.perf-sec{background:var(--branco);border-radius:var(--r2);padding:24px;margin-bottom:16px;border:1px solid var(--borda)}
+.perf-sec-title{font-family:'Lora',serif;font-size:17px;color:var(--g800);margin-bottom:16px}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--g800);color:#fff;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:700;z-index:999;box-shadow:0 4px 20px rgba(0,0,0,.2);transform:translateY(20px);opacity:0;transition:.25s;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-up{animation:fadeUp .25s ease both}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── ADMIN ────────────────────────────────── */
+.admin-wrap{display:flex;flex-direction:column;min-height:100vh;background:#0D1610}
+.admin-top{background:#111E16;border-bottom:1px solid rgba(255,255,255,.07);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;gap:16px}
+.admin-brand{font-family:'Lora',serif;color:#4CAF72;font-size:18px;white-space:nowrap}
+.admin-brand small{font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-left:8px;font-family:'Nunito',sans-serif}
+.admin-tabs-top{display:flex;gap:4px;flex:1;justify-content:center}
+.atab{padding:6px 18px;border-radius:6px;border:none;background:transparent;color:rgba(255,255,255,.45);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
+.atab:hover{color:#fff;background:rgba(255,255,255,.07)}
+.atab.active{color:#4CAF72;background:rgba(76,175,114,.12)}
+.admin-body{flex:1;padding:28px 32px;max-width:1100px;width:100%;margin:0 auto}
+.admin-section{display:none}.admin-section.active{display:block}
+
+/* order cards */
+.oc{background:#1A2820;border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:18px;margin-bottom:10px;transition:.15s}
+.oc.novo{border-left:3px solid #4CAF72}
+.oc-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.oc-id{font-size:11px;font-weight:800;color:#4CAF72;letter-spacing:.08em;text-transform:uppercase;margin-bottom:3px}
+.oc-nome{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
+.oc-info{font-size:12px;color:rgba(255,255,255,.45);line-height:1.8}
+.oc-status{padding:4px 12px;border-radius:20px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;border:none;cursor:pointer;font-family:'Nunito',sans-serif;white-space:nowrap}
+.st-novo{background:rgba(76,175,114,.18);color:#4CAF72}
+.st-visto{background:rgba(255,193,7,.14);color:#FFC107}
+.st-preparo{background:rgba(100,181,246,.14);color:#64B5F6}
+.st-entregue{background:rgba(255,255,255,.07);color:rgba(255,255,255,.35)}
+.oc-items{font-size:12px;color:rgba(255,255,255,.55);line-height:1.9;margin:12px 0 8px}
+.oc-total{font-size:17px;font-weight:800;color:#fff;white-space:nowrap}
+.oc-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.abtn{border:none;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;cursor:pointer}
+.abtn-ghost{background:rgba(255,255,255,.07);color:rgba(255,255,255,.6)}
+.abtn-ghost:hover{background:rgba(255,255,255,.12);color:#fff}
+.abtn-green{background:rgba(76,175,114,.18);color:#4CAF72}
+.abtn-green:hover{background:rgba(76,175,114,.3)}
+.abtn-wpp{background:#25D366;color:#fff}
+.abtn-red{background:rgba(192,57,43,.15);color:#E74C3C}
+.abtn-red:hover{background:rgba(192,57,43,.3)}
+
+/* extra form */
+.extra-form{background:#111E16;border-radius:10px;padding:16px;margin-top:12px;border:1px solid rgba(76,175,114,.2)}
+.extra-tag{display:inline-block;padding:3px 9px;background:rgba(76,175,114,.15);border-radius:4px;font-size:10px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px}
+.ainput{font-family:'Nunito',sans-serif;background:#1A2820;border:1.5px solid rgba(255,255,255,.1);border-radius:8px;padding:8px 12px;color:#fff;font-size:13px;font-weight:600;width:100%}
+.ainput:focus{outline:none;border-color:#4CAF72}
+.ainput::placeholder{color:rgba(255,255,255,.25)}
+.albl{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:rgba(255,255,255,.3);display:block;margin-bottom:4px}
+
+/* coupon admin */
+.cpn-card{background:#1A2820;border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.cpn-code{font-size:14px;font-weight:800;color:#4CAF72;letter-spacing:.08em}
+.cpn-meta{font-size:12px;color:rgba(255,255,255,.4);margin-top:2px}
+
+/* cardápio admin */
+.cdp-cat-block{margin-bottom:28px}
+.cdp-cat-title{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#4CAF72;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.07)}
+.cdp-row{display:grid;grid-template-columns:56px 1fr 72px 72px auto;gap:6px;align-items:center;background:#1A2820;border-radius:8px;padding:9px 12px;margin-bottom:5px}
+.cdp-row input{font-family:'Nunito',sans-serif;background:#111E16;border:1.5px solid rgba(255,255,255,.08);border-radius:6px;padding:5px 8px;color:#fff;font-size:12px;font-weight:600;width:100%}
+.cdp-row input:focus{outline:none;border-color:#4CAF72}
+
+/* admin login */
+.admin-login-wrap{min-height:100vh;background:#0D1610;display:flex;align-items:center;justify-content:center;padding:24px}
+.admin-login-box{background:#1A2820;border-radius:16px;padding:36px;max-width:360px;width:100%;border:1px solid rgba(255,255,255,.07)}
+</style>
+</head>
+<body>
+<div class="toast" id="toast"></div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-logo" onclick="showScreen('home')">
+    <svg width="36" height="36" viewBox="0 0 36 36" fill="none">
+      <rect width="36" height="36" rx="9" fill="rgba(255,255,255,0.15)"/>
+      <ellipse cx="14" cy="13" rx="5" ry="6" fill="#4CAF72"/>
+      <rect x="12" y="18" width="4" height="11" rx="2" fill="#4CAF72"/>
+      <path d="M22 8 Q26 13 26 17 Q26 20 24 21 L24 28" stroke="#4CAF72" stroke-width="3" stroke-linecap="round" fill="none"/>
+      <path d="M28 8 L28 14 Q28 17 25 17" stroke="#4CAF72" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+    </svg>
+    <div>
+      <span class="nav-logo-text">Mermita's</span>
+      <span class="nav-logo-sub">Marmita Fitness Caseira</span>
+    </div>
+  </div>
+  <div class="nav-right" id="nav-right">
+    <button class="nav-btn" onclick="showScreen('home')">Início</button>
+    <button class="nav-btn" onclick="goCdp()">Cardápio</button>
+    <button class="nav-btn" onclick="showScreen('auth')">Entrar</button>
+    <button class="nav-btn nav-btn-cta" onclick="showScreen('auth');setTab('cad')">Fazer pedido</button>
+  </div>
+</nav>
+
+<!-- ═══ HOME ═══ -->
+<div id="home-screen" class="screen active">
+
+<div class="hero-wrap">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-eyebrow">🌿 Entregamos em toda Grande Florianópolis</div>
+      <h1 class="hero-h1">Marmitas fitness<br><em>feitas com carinho,</em><br>congeladas com cuidado</h1>
+      <p class="hero-desc">Monte seu cardápio personalizado, escolha a quantidade de cada ingrediente e receba marmitas saudáveis prontas para descongelar e comer.</p>
+      <div class="hero-btns">
+        <button class="btn btn-lg" style="background:#4CAF72;color:#fff" onclick="showScreen('auth');setTab('cad')">Montar meu pedido</button>
+        <button class="btn btn-lg" style="background:transparent;color:#fff;border:2px solid rgba(255,255,255,.35)" onclick="goCdp()">Ver cardápio</button>
+      </div>
+    </div>
+    <div class="hero-card">
+      <div class="hero-card-title">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><circle cx="9" cy="9" r="8" stroke="#4CAF72" stroke-width="1.5"/><path d="M5 9l3 3 5-5" stroke="#4CAF72" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Como funciona
+      </div>
+      <div class="step"><div class="step-n">1</div><div class="step-t"><strong>Crie sua conta</strong>Salve seu endereço — a taxa de entrega é calculada automaticamente pela sua região</div></div>
+      <div class="step"><div class="step-n">2</div><div class="step-t"><strong>Monte marmita por marmita</strong>Escolha carboidrato, proteína e legume — ou uma marmita pronta especial</div></div>
+      <div class="step"><div class="step-n">3</div><div class="step-t"><strong>Confirme e envie</strong>O pedido completo vai direto para o nosso WhatsApp, formatado e organizado</div></div>
+      <div class="hero-note">📍 Ribeirão da Ilha · Campeche · Trindade · Centro · Norte da Ilha · Grande Florianópolis</div>
+    </div>
+  </div>
+</div>
+
+<div class="sobre-wrap">
+  <div style="max-width:1060px;margin:0 auto">
+    <h2>Por que a Mermita's?</h2>
+    <p class="sec-sub">Comida de verdade, sem complicação</p>
+    <div class="sobre-grid">
+      <div class="sc"><div class="sc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M11 2C11 2 5 6 5 12a6 6 0 0012 0C17 6 11 2 11 2z" fill="#4CAF72" opacity=".3"/><path d="M11 2C11 2 5 6 5 12a6 6 0 0012 0C17 6 11 2 11 2z" stroke="#1D5C3A" stroke-width="1.5" fill="none"/></svg></div><h3>100% caseira</h3><p>Cada marmita preparada em casa, com ingredientes selecionados, sem conservantes industriais.</p></div>
+      <div class="sc"><div class="sc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><rect x="3" y="8" width="16" height="11" rx="2" fill="#4CAF72" opacity=".3"/><rect x="3" y="8" width="16" height="11" rx="2" stroke="#1D5C3A" stroke-width="1.5" fill="none"/><path d="M8 8V6a3 3 0 016 0v2" stroke="#1D5C3A" stroke-width="1.5" stroke-linecap="round"/></svg></div><h3>Congelada e pronta</h3><p>Congelada no pico do frescor. Descongele quando quiser — mantém todo o sabor e nutrição.</p></div>
+      <div class="sc"><div class="sc-icon"><svg width="22" height="22" viewBox="0 0 22 22" fill="none"><path d="M4 11h14M11 4v14" stroke="#1D5C3A" stroke-width="1.5" stroke-linecap="round"/><circle cx="11" cy="11" r="8" stroke="#4CAF72" stroke-width="1.5" opacity=".5"/></svg></div><h3>Totalmente personalizada</h3><p>Você escolhe os ingredientes e a quantidade em gramas — o preço é calculado automaticamente.</p></div>
+    </div>
+  </div>
+</div>
+
+<div class="cdp-wrap" id="cdp-section">
+  <div style="max-width:1060px;margin:0 auto">
+    <h2>Cardápio</h2>
+    <p class="sec-sub">Preços por porção base — quantidades ajustáveis na hora do pedido</p>
+    <div class="cat-tabs">
+      <button class="cat-tab active" onclick="filterCat('carbo',this)">Carboidratos</button>
+      <button class="cat-tab" onclick="filterCat('prot',this)">Proteínas</button>
+      <button class="cat-tab" onclick="filterCat('leg',this)">Legumes</button>
+      <button class="cat-tab" onclick="filterCat('esp',this)">Marmitas prontas</button>
+      <button class="cat-tab" onclick="filterCat('sopa',this)">Sopas</button>
+      <button class="cat-tab" onclick="filterCat('assados',this)">Assados</button>
+    </div>
+    <div class="cdp-grid" id="cdp-grid"></div>
+    <div class="cdp-cta">
+      <p>Quer personalizar a quantidade de cada ingrediente e montar seu pedido completo?</p>
+      <button class="btn btn-p btn-lg" onclick="showScreen('auth');setTab('cad')">Criar conta e montar pedido</button>
+    </div>
+  </div>
+</div>
+
+<div class="ent-wrap">
+  <div style="max-width:1060px;margin:0 auto">
+    <h2 style="color:#fff">Zona de entrega</h2>
+    <p class="sec-sub" style="color:var(--g100)">Entregamos na Ilha e em toda Grande Florianópolis</p>
+    <div class="zonas" id="zonas-pub"></div>
+  </div>
+</div>
+
+<footer>
+  <div class="fg">
+    <div><div class="fb">Mermita's</div><div class="fbs">Marmita Fitness Caseira</div><p class="fd">Comida caseira, saudável e congelada.<br>Feita com carinho no Ribeirão da Ilha — Florianópolis, SC.</p></div>
+    <div class="fc"><h4>Contato</h4><a href="https://wa.me/5548996107844" target="_blank">📱 (48) 9 9610-7844</a><p>📍 Ribeirão da Ilha<br>Florianópolis — SC<br>CEP 88064-002</p></div>
+    <div class="fc"><h4>Links</h4><a href="#" onclick="goCdp()">Cardápio</a><a href="#" onclick="showScreen('auth')">Fazer pedido</a><a href="https://wa.me/5548996107844" target="_blank">WhatsApp</a></div>
+  </div>
+  <div class="fbot"><span>© 2025 Mermita's — Marmita Fitness Caseira</span><span>Florianópolis, SC</span></div>
+</footer>
+</div>
+
+<!-- ═══ AUTH ═══ -->
+<div id="auth-screen" class="screen">
+<div class="auth-wrap">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <svg width="60" height="60" viewBox="0 0 60 60" fill="none"><rect width="60" height="60" rx="16" fill="#1D5C3A"/><ellipse cx="23" cy="19" rx="6" ry="7" fill="#4CAF72"/><rect x="20.5" y="25" width="5" height="16" rx="2.5" fill="#4CAF72"/><path d="M33 10 Q38 16 38 22 Q38 25 35.5 26.5 L35.5 42" stroke="#4CAF72" stroke-width="4" stroke-linecap="round" fill="none"/><path d="M41 10 L41 18 Q41 22 37.5 22" stroke="#4CAF72" stroke-width="3" stroke-linecap="round" fill="none"/></svg>
+      <h2>Mermita's</h2><p>Marmita Fitness Caseira</p>
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-ent" onclick="setTab('ent')">Entrar</button>
+      <button class="auth-tab" id="tab-cad" onclick="setTab('cad')">Criar conta</button>
+    </div>
+    <div id="form-ent">
+      <label class="fg-label">Nome</label>
+      <input class="fginput" type="text" id="ln" placeholder="Seu nome completo">
+      <label class="fg-label">WhatsApp</label>
+      <input class="fginput" type="tel" id="lt" placeholder="(48) 9 9999-9999">
+      <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px" onclick="doLogin()">Entrar e fazer pedido →</button>
+      <p style="text-align:center;font-size:12px;color:var(--txt3);margin-top:14px">Ainda não tem conta? <a href="#" onclick="setTab('cad')" style="color:var(--g700);font-weight:700">Criar conta grátis</a></p>
+    </div>
+    <div id="form-cad" class="hide">
+      <label class="fg-label">Nome completo</label>
+      <input class="fginput" type="text" id="cn" placeholder="Seu nome completo">
+      <div class="fg2">
+        <div><label class="fg-label">WhatsApp</label><input class="fginput" type="tel" id="ct" placeholder="(48) 9 9999-9999"></div>
+        <div><label class="fg-label">E-mail (opcional)</label><input class="fginput" type="email" id="ce" placeholder="seu@email.com"></div>
+      </div>
+      <span class="fsec">Endereço de entrega</span>
+      <label class="fg-label">Região / Zona</label>
+      <select class="fginput" id="cz" onchange="updZona()"></select>
+      <div class="fghint" id="zona-hint"></div>
+      <label class="fg-label">Endereço completo</label>
+      <input class="fginput" type="text" id="cend" placeholder="Rua, número, complemento, bairro">
+      <button class="btn btn-p" style="width:100%;justify-content:center;padding:13px;margin-top:4px" onclick="doCad()">Criar conta e montar pedido →</button>
+    </div>
+    <p style="text-align:center;margin-top:16px"><button style="background:none;border:none;font-size:13px;color:var(--txt3);cursor:pointer;font-family:'Nunito',sans-serif" onclick="showScreen('home')">← Voltar ao site</button></p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ PEDIDO ═══ -->
+<div id="pedido-screen" class="screen">
+<div class="pedido-layout">
+
+  <!-- COLUNA ESQUERDA -->
+  <div class="pedido-main">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+      <div><h2 style="font-size:22px">Monte seu pedido</h2><p style="font-size:13px;color:var(--txt3)">Salve cada marmita individualmente</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn" style="background:var(--g50);color:var(--g800);padding:8px 14px;font-size:13px" onclick="showScreen('perfil')">Meu perfil</button>
+        <button class="btn" style="background:var(--creme2);color:var(--txt2);padding:8px 14px;font-size:13px" onclick="doLogout()">Sair</button>
+      </div>
+    </div>
+
+    <div style="font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;color:var(--txt3);margin-bottom:10px">Marmitas salvas</div>
+    <div class="chips" id="chips"><div class="chip-empty">Nenhuma marmita salva — monte abaixo</div></div>
+
+    <div class="bb fade-up">
+      <div class="bb-head">
+        <div><div class="bb-num" id="bb-num">Marmita #1</div><div class="bb-sub">Múltipla escolha em cada categoria</div></div>
+        <button class="btn" style="background:var(--creme);color:var(--txt2);padding:7px 14px;font-size:12px" onclick="clearB()">Limpar</button>
+      </div>
+
+      <!-- BLOCO 1: montagem livre — fundo branco -->
+      <div style="background:var(--branco);border-radius:var(--r);padding:18px;margin-bottom:8px;border:1px solid var(--borda)">
+        <div style="font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:14px;display:flex;align-items:center;gap:6px">
+          <span style="background:var(--creme2);color:var(--txt2);padding:2px 10px;border-radius:20px">Montagem livre</span>
+          <span style="font-weight:400;font-size:10px;color:var(--txt3)">· múltipla seleção em cada categoria</span>
+        </div>
+
+        <div class="slot" id="sec-carbo">
+          <div class="slot-lbl"><span class="badge badge-c">Carboidrato</span><span class="slot-opt">opcional · pode escolher mais de 1</span></div>
+          <div class="igrid" id="g-carbo"></div>
+        </div>
+
+        <div id="prot-tip" style="display:none;align-items:center;gap:10px;background:#F5F0FF;border:1px solid #C4AAEE;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12px;color:#4A2D8A;font-weight:600">
+          <span>↓</span><span>Quer adicionar uma proteína? Está aqui abaixo — ou pule para os legumes se preferir.</span>
+        </div>
+        <div class="slot" id="sec-prot">
+          <div class="slot-lbl"><span class="badge badge-p">Proteína</span><span class="slot-opt">opcional · pode escolher mais de 1</span></div>
+          <div class="igrid" id="g-prot"></div>
+        </div>
+
+        <div id="leg-tip" style="display:none;align-items:center;gap:10px;background:#FFF7ED;border:1px solid #F5C97A;border-radius:8px;padding:10px 14px;margin:10px 0;font-size:12px;color:#7A4800;font-weight:600">
+          <span>↓</span><span>Quer adicionar legume ou verdura? Opcional — pode combinar 2 tipos.</span>
+        </div>
+        <div class="slot" id="sec-leg">
+          <div class="slot-lbl"><span class="badge badge-l">Legume / Verdura</span><span class="slot-opt">opcional · pode combinar 2</span></div>
+          <div class="igrid" id="g-leg"></div>
+        </div>
+      </div>
+
+      <!-- BLOCO 2: marmitas especiais — fundo âmbar -->
+      <div style="background:#FFFBF2;border-radius:var(--r);padding:18px;margin-bottom:8px;border:1px solid #E8C96A">
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#FEF4E4;color:#7A4800;padding:3px 12px;border-radius:20px;border:1px solid #E8C96A">Marmitas especiais</span>
+          <span style="font-size:11px;color:#A06800;font-weight:400">Refeições completas — quantidade ajustável. Carbo e proteína avulsos são removidos ao selecionar. Você ainda pode adicionar legumes.</span>
+        </div>
+        <div class="igrid" id="g-esp"></div>
+      </div>
+
+      <!-- BLOCO 3: sopas & assados — fundo marrom -->
+      <div style="background:#FAF5F0;border-radius:var(--r);padding:18px;border:1px solid #C9AA8A">
+        <div style="margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;background:#F0E4D4;color:#5C3310;padding:3px 12px;border-radius:20px;border:1px solid #C9AA8A">Sopas & Assados</span>
+          <span style="font-size:11px;color:#7A4E28;font-weight:400">Porção e preço fixos — sem ajuste de gramagem. Você ainda pode adicionar legumes.</span>
+        </div>
+        <div class="slot-lbl" style="margin-bottom:6px"><span class="badge badge-s">Sopas cremosas</span><span class="slot-opt">400g por porção</span></div>
+        <div class="igrid-w" id="g-sopa"></div>
+        <div class="slot-lbl" style="margin-top:14px;margin-bottom:6px"><span class="badge badge-a">Assados especiais</span></div>
+        <div class="igrid-w" id="g-assados"></div>
+      </div>
+
+      <!-- PREVIEW -->
+      <div class="bprev" id="bprev" style="display:none">
+        <div class="bprev-title">Resumo — <span id="prev-num">Marmita 1</span></div>
+        <div id="prev-rows"></div>
+        <div class="prev-total"><span class="prev-tlabel">Preço final</span><input type="number" class="price-inp" id="price-inp" min="0" step="0.5"></div>
+      </div>
+      <div class="bb-actions">
+        <button class="btn btn-p" onclick="saveM()">Salvar marmita ✓</button>
+      </div>
+    </div>
+  </div><!-- /pedido-main -->
+
+  <!-- COLUNA DIREITA: resumo do pedido -->
+  <div class="pedido-side">
+    <div class="side-title">
+      <span>Pedido</span>
+      <span style="font-size:13px;color:var(--txt3);font-weight:400" id="side-cnt"></span>
+    </div>
+    <div id="side-ms"><div class="side-empty">Nenhuma marmita ainda</div></div>
+    <div class="side-tots" id="side-tots" style="display:none">
+      <div class="tot-row"><span>Subtotal</span><span id="s-sub">R$ 0,00</span></div>
+      <div class="tot-row"><span>Taxa de entrega</span><span id="s-taxa">R$ 0,00</span></div>
+      <div class="tot-row" style="flex-direction:column;align-items:stretch;gap:6px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span style="font-size:13px;color:var(--txt2)">Cupom de desconto</span>
+          <span id="cupom-ok" style="display:none;font-size:11px;font-weight:700;color:var(--g700)">✓ aplicado</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          <input class="side-inp" type="text" id="cupom-inp" placeholder="Código" style="flex:1;width:auto;text-transform:uppercase;letter-spacing:.05em" oninput="this.value=this.value.toUpperCase()">
+          <button onclick="aplicarCupom()" style="background:var(--g800);color:#fff;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:700;cursor:pointer;font-family:'Nunito',sans-serif">Aplicar</button>
+        </div>
+        <div id="cupom-msg" style="font-size:11px;color:var(--txt3);display:none"></div>
+      </div>
+      <div class="tot-row" id="desc-row" style="display:none"><span style="color:var(--g700);font-weight:600">Desconto</span><span id="s-desc-val" style="color:var(--g700);font-weight:700">− R$ 0,00</span></div>
+      <div class="tot-row grand"><span>Total</span><span id="s-total">R$ 0,00</span></div>
+    </div>
+    <div class="side-acts">
+      <button class="btn btn-p" style="justify-content:center" onclick="goRes()">Ver resumo e orçamento →</button>
+      <button class="btn btn-wpp" style="justify-content:center" onclick="sendWpp()">Enviar pelo WhatsApp</button>
+    </div>
+
+  </div><!-- /pedido-side -->
+
+</div><!-- /pedido-layout -->
+
+<!-- BOTÃO FLUTUANTE salvar -->
+<div id="float-save" style="display:none;position:fixed;bottom:24px;left:calc(50% - 170px);z-index:150">
+  <button class="btn btn-p" style="padding:13px 32px;font-size:15px;box-shadow:0 4px 24px rgba(29,92,58,.4)" onclick="saveM()">Salvar marmita ✓</button>
+</div>
+</div>
+
+<!-- ═══ RESUMO ═══ -->
+<div id="resumo-screen" class="screen">
+<div style="background:var(--creme);padding:40px 5vw;min-height:100vh">
+  <div class="res-box">
+    <button class="btn" style="background:transparent;color:var(--g800);padding:0;margin-bottom:20px;font-size:14px;border:none" onclick="showScreen('pedido')">← Voltar ao pedido</button>
+    <div class="res-head"><h2>🍱 Orçamento Mermita's</h2><p>Marmita Fitness Caseira · Plano alimentar personalizado</p></div>
+    <div class="res-body">
+      <div class="res-client" id="res-client"></div>
+      <div id="res-ms"></div>
+      <div class="res-tots" id="res-tots"></div>
+    </div>
+    <div class="res-foot">
+      <button class="btn btn-p" onclick="copyOrc()">Copiar orçamento</button>
+      <button class="btn btn-wpp" onclick="sendWpp()">Enviar pelo WhatsApp</button>
+      <button class="btn" style="background:var(--creme2);color:var(--txt2)" onclick="showScreen('pedido')">Editar pedido</button>
+    </div>
+    <div id="wpp-prev" style="display:none"></div>
+  </div>
+</div>
+</div>
+
+<!-- ═══ PERFIL ═══ -->
+<div id="perfil-screen" class="screen">
+<div style="background:var(--creme);padding:40px 5vw;min-height:100vh">
+  <div style="max-width:600px;margin:0 auto">
+    <button class="btn" style="background:transparent;color:var(--g800);padding:0;margin-bottom:20px;font-size:14px;border:none" onclick="showScreen('pedido')">← Voltar ao pedido</button>
+    <div class="perf-head">
+      <div class="perf-av" id="p-av">M</div>
+      <div><h3 style="font-family:'Lora',serif;font-size:20px;color:#fff" id="p-nome">—</h3><p style="font-size:13px;color:var(--g100)" id="p-sub">—</p></div>
+    </div>
+    <div class="perf-sec">
+      <div class="perf-sec-title">Dados e endereço</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;font-size:13px">
+        <div><div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">WhatsApp</div><div id="pp-tel" style="font-weight:700">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Região</div><div id="pp-zona" style="font-weight:700">—</div></div>
+        <div style="grid-column:1/-1"><div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Endereço</div><div id="pp-end" style="font-weight:700">—</div></div>
+        <div><div style="font-size:10px;font-weight:700;color:var(--txt3);text-transform:uppercase;letter-spacing:.04em;margin-bottom:3px">Taxa de entrega</div><div id="pp-taxa" style="font-weight:700;color:var(--g700)">—</div></div>
+      </div>
+    </div>
+    <div class="perf-sec">
+      <div class="perf-sec-title">Histórico de pedidos</div>
+      <div id="historico"><p style="font-size:13px;color:var(--txt3)">Nenhum pedido confirmado ainda.</p></div>
+    </div>
+    <button class="btn btn-outline" onclick="doLogout()">Sair da conta</button>
+  </div>
+</div>
+</div>
+
+<!-- ═══ ADMIN LOGIN ═══ -->
+<div id="admin-login-screen" class="screen">
+<div class="admin-login-wrap">
+  <div class="admin-login-box">
+    <div style="text-align:center;margin-bottom:28px">
+      <div style="font-family:'Lora',serif;font-size:22px;color:#4CAF72">Mermita's</div>
+      <div style="font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:6px">Painel Admin</div>
+    </div>
+    <label class="albl" style="margin-bottom:6px">Senha</label>
+    <input id="admin-pw" class="ainput" type="password" placeholder="••••••••" style="margin-bottom:10px" onkeydown="if(event.key==='Enter')doAdminLogin()">
+    <div id="admin-pw-err" style="font-size:12px;color:#E74C3C;margin-bottom:10px;display:none">Senha incorreta.</div>
+    <button onclick="doAdminLogin()" style="width:100%;background:#1D5C3A;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:12px;border-radius:10px;cursor:pointer;transition:.15s">Entrar no painel →</button>
+    <p style="text-align:center;margin-top:18px"><button onclick="showScreen('home')" style="background:none;border:none;font-size:12px;color:rgba(255,255,255,.3);cursor:pointer;font-family:'Nunito',sans-serif">← Voltar ao site</button></p>
+  </div>
+</div>
+</div>
+
+<!-- ═══ ADMIN PANEL ═══ -->
+<div id="admin-screen" class="screen">
+<div class="admin-wrap">
+  <div class="admin-top">
+    <div class="admin-brand">Mermita's <small>Admin</small></div>
+    <div class="admin-tabs-top">
+      <button class="atab active" id="atab-pedidos" onclick="showAdminTab('pedidos')">Pedidos</button>
+      <button class="atab" id="atab-cupons" onclick="showAdminTab('cupons')">Cupons</button>
+      <button class="atab" id="atab-cardapio" onclick="showAdminTab('cardapio')">Cardápio</button>
+      <button class="atab" id="atab-zonas" onclick="showAdminTab('zonas')">Zonas de Entrega</button>
+    </div>
+    <button onclick="doAdminLogout()" style="background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.45);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:6px;cursor:pointer;white-space:nowrap">Sair</button>
+  </div>
+
+  <div class="admin-body">
+
+    <!-- PEDIDOS -->
+    <div id="admin-section-pedidos" class="admin-section active">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div style="font-family:'Lora',serif;font-size:20px;color:#fff">Pedidos</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:2px" id="admin-orders-info">Aguardando pedidos…</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:8px;height:8px;border-radius:50%;background:#4CAF72;animation:pulse 2s infinite"></div>
+          <span style="font-size:12px;color:rgba(255,255,255,.3)">ao vivo · atualiza a cada 5s</span>
+        </div>
+      </div>
+      <div id="admin-orders-list"></div>
+    </div>
+
+    <!-- CUPONS -->
+    <div id="admin-section-cupons" class="admin-section">
+      <div style="font-family:'Lora',serif;font-size:20px;color:#fff;margin-bottom:22px">Cupons de desconto</div>
+      <div id="admin-cupons-list"></div>
+      <div style="background:#1A2820;border:1px solid rgba(76,175,114,.2);border-radius:12px;padding:20px;margin-top:16px">
+        <div style="font-size:11px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Novo cupom</div>
+        <div style="display:grid;grid-template-columns:1fr 140px 100px auto;gap:10px;align-items:end">
+          <div>
+            <label class="albl">Código</label>
+            <input id="nc-cod" class="ainput" type="text" placeholder="BEMVINDA20" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div>
+            <label class="albl">Tipo</label>
+            <select id="nc-tipo" class="ainput" style="cursor:pointer">
+              <option value="fixo">Fixo (R$)</option>
+              <option value="pct">Percentual (%)</option>
+            </select>
+          </div>
+          <div>
+            <label class="albl">Valor</label>
+            <input id="nc-val" class="ainput" type="number" placeholder="10" min="1" step="0.5">
+          </div>
+          <button onclick="addCupomAdmin()" style="background:#1D5C3A;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;height:38px">Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ZONAS -->
+    <div id="admin-section-zonas" class="admin-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'Lora',serif;font-size:20px;color:#fff">Zonas de entrega</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.3)">Alterações refletem no site e no cadastro de clientes</div>
+      </div>
+      <div style="display:grid;grid-template-columns:80px 1fr 1fr 90px 44px;gap:4px;padding:0 12px 8px;color:rgba(255,255,255,.25);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em">
+        <span>Chave</span><span>Nome da zona</span><span>Descrição</span><span style="text-align:right">Taxa R$</span><span></span>
+      </div>
+      <div id="admin-zonas-list"></div>
+      <div style="background:#1A2820;border:1px solid rgba(76,175,114,.2);border-radius:12px;padding:20px;margin-top:16px">
+        <div style="font-size:11px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.07em;margin-bottom:14px">Nova zona</div>
+        <div style="display:grid;grid-template-columns:120px 1fr 1fr 100px auto;gap:10px;align-items:end;flex-wrap:wrap">
+          <div><label class="albl">Chave (ID)</label><input id="nz-key" class="ainput" type="text" placeholder="ex: sao_jose" oninput="this.value=this.value.toLowerCase().replace(/\s/g,'_')"></div>
+          <div><label class="albl">Nome</label><input id="nz-nome" class="ainput" type="text" placeholder="São José Centro"></div>
+          <div><label class="albl">Descrição</label><input id="nz-sub" class="ainput" type="text" placeholder="taxa de entrega"></div>
+          <div><label class="albl">Taxa R$</label><input id="nz-taxa" class="ainput" type="number" placeholder="20" min="0" step="5" style="text-align:right"></div>
+          <button onclick="addZonaAdmin()" style="background:#1D5C3A;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:9px 18px;border-radius:8px;cursor:pointer;white-space:nowrap;height:38px">Adicionar</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CARDÁPIO -->
+    <div id="admin-section-cardapio" class="admin-section">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:'Lora',serif;font-size:20px;color:#fff">Editar cardápio</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.3)">Edite diretamente nos campos — alterações aplicadas em tempo real</div>
+      </div>
+      <div id="admin-cdp-editor"></div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+const CDP = {
+  carbo:[
+    {id:'C1',nome:'Batata doce cozida',base:120,preco:4,pg:.033},
+    {id:'C2',nome:'Batata doce assada',base:120,preco:4,pg:.033},
+    {id:'C3',nome:'Batata inglesa cozida',base:120,preco:4,pg:.033},
+    {id:'C4',nome:'Batata inglesa assada',base:120,preco:4,pg:.033},
+    {id:'C5',nome:'Purê de batata doce',base:120,preco:4,pg:.033},
+    {id:'C6',nome:'Purê de batata inglesa/baroa',base:120,preco:4,pg:.033},
+    {id:'C7',nome:'Purê de aipim',base:120,preco:4,pg:.033},
+    {id:'C8',nome:'Aipim cozido',base:120,preco:4,pg:.033},
+    {id:'C9',nome:'Arroz branco/integral',base:120,preco:4,pg:.033},
+    {id:'C10',nome:'Feijão cozido',base:100,preco:4,pg:.040},
+    {id:'C11',nome:'Lentilha cozida',base:100,preco:4,pg:.040},
+    {id:'C12',nome:'Arroz + feijão (80g cada)',base:160,preco:4,pg:.036},
+    {id:'C13',nome:'Macarrão espaguete',base:120,preco:4,pg:.033},
+    {id:'C14',nome:'Macarrão penne com queijo',base:120,preco:5,pg:.042},
+    {id:'C15',nome:'Macarrão alho e óleo',base:120,preco:4,pg:.033},
+  ],
+  prot:[
+    {id:'P1',nome:'Frango grelhado',base:100,preco:8,pg:.08},
+    {id:'P2',nome:'Frango peito assado',base:100,preco:8,pg:.08},
+    {id:'P3',nome:'Frango ensopado',base:100,preco:8,pg:.08},
+    {id:'P4',nome:'Frango sobrecoxa sem osso',base:100,preco:8,pg:.08},
+    {id:'P5',nome:'Carne de porco de panela',base:100,preco:8,pg:.08},
+    {id:'P6',nome:'Carne assada de panela',base:100,preco:10,pg:.10},
+    {id:'P7',nome:'Iscas de carne',base:100,preco:10,pg:.10},
+    {id:'P8',nome:'Carne moída com molho',base:100,preco:10,pg:.10},
+    {id:'P9',nome:'Carne moída refogada',base:100,preco:10,pg:.10},
+    {id:'P10',nome:'Almôndegas ao molho',base:100,preco:10,pg:.10},
+    {id:'P11',nome:'Almôndegas fritas sem molho',base:100,preco:10,pg:.10},
+  ],
+  leg:[
+    {id:'L1',nome:'Legumes assados',base:80,preco:3,pg:.0375,desc:'brócolis, cenoura, couve-flor, pimentão, abobrinha, cebola'},
+    {id:'L2',nome:'Couve refogada',base:80,preco:4.5,pg:.05625},
+    {id:'L3',nome:'Legumes c/ shoyu',base:80,preco:3,pg:.0375,desc:'brócolis, cenoura, couve-flor, pimentão, cebola'},
+    {id:'L4',nome:'Purê de abóbora',base:80,preco:3,pg:.0375},
+    {id:'L5',nome:'Repolho refogado',base:80,preco:3,pg:.0375},
+    {id:'L6',nome:'Brócolis cozido',base:80,preco:3,pg:.0375},
+    {id:'L7',nome:'Couve-flor cozida',base:80,preco:3,pg:.0375},
+  ],
+  esp:[
+    {id:'E1',nome:'Estrogonofe de camarão',base:300,preco:22,pg:.073333},
+    {id:'E2',nome:'Risoto de camarão',base:300,preco:22,pg:.073333},
+    {id:'E3',nome:'Yakisoba de carne',base:300,preco:19,pg:.0633},
+    {id:'E4',nome:'Yakisoba de frango',base:300,preco:17,pg:.0567},
+    {id:'E5',nome:'Risoto de frango',base:300,preco:17,pg:.056667},
+    {id:'E6',nome:'Estrogonofe de frango',base:300,preco:18,pg:.06},
+    {id:'E7',nome:'Estrogonofe de carne',base:300,preco:20,pg:.0667},
+    {id:'E8',nome:'Panqueca de carne moída',base:350,preco:18,pg:.051429},
+  ],
+  sopa:[
+    {id:'S1',nome:'Creme de aipim c/ carne desfiada',base:400,preco:19,fixo:true},
+    {id:'S2',nome:'Creme de aipim c/ frango desfiado',base:400,preco:17,fixo:true},
+    {id:'S3',nome:'Creme de batata c/ frango desfiado',base:400,preco:17,fixo:true},
+    {id:'S4',nome:'Creme de batata c/ carne desfiada',base:400,preco:19,fixo:true},
+    {id:'S5',nome:'Feijão preto com arroz e legumes',base:400,preco:17,fixo:true},
+  ],
+  assados:[
+    {id:'A1',nome:'Empadão de camarão',base:230,preco:17,fixo:true},
+    {id:'A2',nome:'Empadão de frango',base:230,preco:13,fixo:true},
+    {id:'A3',nome:'Lasanha 4 queijos',base:450,preco:28,fixo:true},
+    {id:'A4',nome:'Lasanha de carne moída',base:450,preco:30,fixo:true},
+  ]
+};
+let ZONAS=[
+  {key:'ribeirao',nome:'Ribeirão da Ilha',       taxa:0, sub:'Retirada no local'},
+  {key:'sul',     nome:'Campeche / Sul da Ilha',  taxa:15,sub:'taxa de entrega'},
+  {key:'trindade',nome:'Trindade / Pantanal',     taxa:15,sub:'taxa de entrega'},
+  {key:'centro',  nome:'Centro / Continente',     taxa:20,sub:'taxa de entrega'},
+  {key:'norte',   nome:'Norte da Ilha',           taxa:25,sub:'Jurerê, Ingleses, Canasvieiras'},
+  {key:'grande',  nome:'Grande Florianópolis',    taxa:30,sub:'São José, Palhoça, Biguaçu'},
+];
+function buildZonaMaps(){
+  window.ZONA_T=Object.fromEntries(ZONAS.map(z=>[z.key,z.taxa]));
+  window.ZONA_N=Object.fromEntries(ZONAS.map(z=>[z.key,z.nome]));
+}
+function saveZonas(){
+  localStorage.setItem('mermitas_zonas',JSON.stringify(ZONAS));
+}
+function loadZonas(){
+  const saved=localStorage.getItem('mermitas_zonas');
+  if(saved){try{ZONAS=JSON.parse(saved);}catch(e){}}
+}
+function applyZonaChanges(){
+  buildZonaMaps();
+  saveZonas();
+  renderZonaSelect();
+  renderZonasPub();
+  /* se usuário logado, atualiza taxa conforme nova tabela */
+  if(user&&user.zona){
+    user.taxa=ZONA_T[user.zona]??user.taxa;
+    user.zonaNome=ZONA_N[user.zona]||user.zonaNome;
+    refreshSide();
+  }
+}
+function renderZonaSelect(){
+  const sel=$('cz');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Selecione sua região</option>'+
+    ZONAS.map(z=>`<option value="${z.key}" data-t="${z.taxa}">${z.nome} — ${z.taxa===0?'Retirada grátis':'R$ '+z.taxa}</option>`).join('');
+  if(cur)sel.value=cur;
+}
+function renderZonasPub(){
+  const el=$('zonas-pub');if(!el)return;
+  el.innerHTML=ZONAS.map(z=>`<div class="zona"><h4>${z.nome}</h4><div class="zona-p">${z.taxa===0?'Grátis':'R$ '+z.taxa}</div><div class="zona-s">${z.sub}</div></div>`).join('');
+}
+loadZonas();
+buildZonaMaps();
+const ALL={};Object.values(CDP).forEach(a=>a.forEach(i=>ALL[i.id]=i));
+
+let user=null,marmitas=[];
+/* carbo e prot agora são arrays — seleção múltipla livre
+   esp/sopa/assado são mutuamente exclusivos e bloqueiam carbo+prot
+   leg é sempre livre (vai como acompanhamento em qualquer caso)       */
+const cur={carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null};
+
+const fR=v=>'R$ '+v.toFixed(2).replace('.',',');
+const rH=v=>Math.round(v*2)/2;
+const $=id=>document.getElementById(id);
+
+function toast(m){const t=$('toast');t.textContent=m;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600)}
+
+function showScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(n+'-screen').classList.add('active');
+  window.scrollTo(0,0);
+  if(n==='pedido')renderPedido();
+  if(n==='perfil')renderPerfil();
+  if(n==='resumo')renderResumo();
+}
+function goCdp(){showScreen('home');setTimeout(()=>$('cdp-section')?.scrollIntoView({behavior:'smooth'}),120)}
+function updateNav(){
+  const nr=$('nav-right');
+  if(user){
+    nr.innerHTML=`<div class="nav-user" onclick="showScreen('perfil')"><div class="nav-user-av">${user.nome[0].toUpperCase()}</div><span>${user.nome.split(' ')[0]}</span></div><button class="nav-btn nav-btn-cta" onclick="showScreen('pedido')">Meu pedido</button>`;
+  } else {
+    nr.innerHTML=`<button class="nav-btn" onclick="showScreen('home')">Início</button><button class="nav-btn" onclick="goCdp()">Cardápio</button><button class="nav-btn" onclick="showScreen('auth')">Entrar</button><button class="nav-btn nav-btn-cta" onclick="showScreen('auth');setTab('cad')">Fazer pedido</button>`;
+  }
+}
+
+function setTab(t){
+  $('tab-ent').classList.toggle('active',t==='ent');
+  $('tab-cad').classList.toggle('active',t==='cad');
+  $('form-ent').classList.toggle('hide',t!=='ent');
+  $('form-cad').classList.toggle('hide',t!=='cad');
+}
+function updZona(){
+  const s=$('cz'),o=s.options[s.selectedIndex],t=o.dataset.t;
+  $('zona-hint').textContent=t!==undefined?(+t===0?'✓ Retirada gratuita no Ribeirão da Ilha':'Taxa de entrega: R$ '+t+',00'):'';
+}
+function doLogin(){
+  const n=$('ln').value.trim(),t=$('lt').value.trim();
+  if(!n||!t){toast('Preencha nome e WhatsApp');return}
+  user={nome:n,tel:t,zona:'',zonaNome:'A informar',endereco:'A informar',taxa:0};
+  updateNav();showScreen('pedido');toast('Bem-vinda de volta, '+n.split(' ')[0]+'! 👋');
+}
+function doCad(){
+  const n=$('cn').value.trim(),t=$('ct').value.trim(),z=$('cz').value,e=$('cend').value.trim();
+  if(!n||!t){toast('Preencha nome e WhatsApp');return}
+  if(!z){toast('Selecione sua região');return}
+  user={nome:n,tel:t,email:$('ce').value.trim(),zona:z,zonaNome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0};
+  updateNav();showScreen('pedido');toast('Conta criada! Bem-vinda, '+n.split(' ')[0]+' 🎉');
+}
+function doLogout(){user=null;marmitas=[];cupomAtivo=null;Object.assign(cur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});updateNav();showScreen('home')}
+
+/* cardápio público */
+function filterCat(c,b){
+  document.querySelectorAll('.cat-tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active');renderCdpGrid(c);
+}
+function renderCdpGrid(c='carbo'){
+  const g=$('cdp-grid');if(!g)return;
+  g.innerHTML=(CDP[c]||[]).map(it=>`<div class="mc"><div class="mc-name">${it.nome}</div>${it.desc?`<div class="mc-desc">${it.desc}</div>`:''}<div class="mc-foot"><span class="mc-qty">${it.base}g</span><span class="mc-price">${fR(it.preco)}</span></div></div>`).join('');
+}
+
+/* builder */
+function renderPedido(){renderAllG();renderChips();refreshSide();$('bb-num').textContent='Marmita #'+(marmitas.length+1);updatePrev();updateFloatBtn()}
+
+/* ─── REGRAS DE SELEÇÃO ───────────────────────────────────
+   carbo[] e prot[] → múltipla seleção livre
+   leg[]            → múltipla seleção livre (acompanha qualquer combinação)
+   esp / sopa / assado → exclusivos entre si
+     · esp   bloqueia carbo e prot (mas aceita leg)
+     · sopa  bloqueia carbo, prot (mas aceita leg)
+     · assado bloqueia carbo, prot (mas aceita leg)
+   Selecionar carbo ou prot zera esp/sopa/assado
+──────────────────────────────────────────────────────── */
+function hasBase(){return cur.carbo.length||cur.prot.length||cur.leg.length}
+function hasEspFixed(){return cur.esp||cur.sopa||cur.assado}
+
+function selItem(id,slot){
+  if(slot==='carbo'){
+    const i=cur.carbo.findIndex(x=>x.id===id);
+    if(i>=0) cur.carbo.splice(i,1);
+    else{
+      if(cur.esp||cur.sopa||cur.assado){cur.esp=null;cur.sopa=null;cur.assado=null;toast('Marmita especial/sopa/assado removido — montando livremente 🥗');}
+      cur.carbo.push({id,g:ALL[id].base});
+    }
+  } else if(slot==='prot'){
+    const i=cur.prot.findIndex(x=>x.id===id);
+    if(i>=0) cur.prot.splice(i,1);
+    else{
+      if(cur.esp||cur.sopa||cur.assado){cur.esp=null;cur.sopa=null;cur.assado=null;toast('Marmita especial/sopa/assado removido — montando livremente 🥗');}
+      cur.prot.push({id,g:ALL[id].base});
+    }
+  } else if(slot==='leg'){
+    const i=cur.leg.findIndex(x=>x.id===id);
+    if(i>=0) cur.leg.splice(i,1);
+    else cur.leg.push({id,g:ALL[id].base});
+  } else if(slot==='esp'){
+    if(cur.esp?.id===id) cur.esp=null;
+    else{
+      if(cur.carbo.length||cur.prot.length){cur.carbo=[];cur.prot=[];toast('Carbo e proteína removidos — marmita especial selecionada. Legumes ainda aceitos! 🥦');}
+      cur.sopa=null;cur.assado=null;cur.esp={id,g:ALL[id].base};
+    }
+  } else if(slot==='sopa'){
+    if(cur.sopa?.id===id) cur.sopa=null;
+    else{
+      if(cur.carbo.length||cur.prot.length){cur.carbo=[];cur.prot=[];toast('Carbo e proteína removidos — sopa selecionada. Legumes ainda aceitos! 🥦');}
+      cur.esp=null;cur.assado=null;cur.sopa={id};
+    }
+  } else if(slot==='assado'){
+    if(cur.assado?.id===id) cur.assado=null;
+    else{
+      if(cur.carbo.length||cur.prot.length){cur.carbo=[];cur.prot=[];toast('Carbo e proteína removidos — assado selecionado. Legumes ainda aceitos! 🥦');}
+      cur.esp=null;cur.sopa=null;cur.assado={id};
+    }
+  }
+  /* tips: ficam visíveis enquanto a seleção correspondente existir */
+  if(cur.carbo.length) showTip('prot-tip'); else hideTip('prot-tip');
+  if(cur.prot.length)  showTip('leg-tip');  else hideTip('leg-tip');
+  renderAllG();updatePrev();updateFloatBtn();
+}
+
+function setG(id,slot,v,e){
+  if(e)e.stopPropagation();
+  const g=Math.max(1,+v||1);
+  if(slot==='carbo'){const x=cur.carbo.find(x=>x.id===id);if(x)x.g=g}
+  else if(slot==='prot'){const x=cur.prot.find(x=>x.id===id);if(x)x.g=g}
+  else if(slot==='leg'){const x=cur.leg.find(x=>x.id===id);if(x)x.g=g}
+  else if(slot==='esp'&&cur.esp?.id===id)cur.esp.g=g;
+  const pe=$('cp-'+id),pb=$('cb-'+id),it=ALL[id];
+  if(pe&&it&&!it.fixo){pe.textContent=fR(rH(it.pg*g));if(pb)pb.textContent=`base ${it.base}g = ${fR(it.preco)}`}
+  updatePrev();
+}
+
+function getG(id,slot){
+  if(slot==='carbo'){const x=cur.carbo.find(x=>x.id===id);return x?x.g:ALL[id].base}
+  if(slot==='prot'){const x=cur.prot.find(x=>x.id===id);return x?x.g:ALL[id].base}
+  if(slot==='leg'){const x=cur.leg.find(x=>x.id===id);return x?x.g:ALL[id].base}
+  if(slot==='esp'&&cur.esp?.id===id)return cur.esp.g;
+  return ALL[id].base;
+}
+
+function isSel(id,slot){
+  if(slot==='carbo')return cur.carbo.some(x=>x.id===id);
+  if(slot==='prot')return cur.prot.some(x=>x.id===id);
+  if(slot==='leg')return cur.leg.some(x=>x.id===id);
+  if(slot==='esp')return cur.esp?.id===id;
+  if(slot==='sopa')return cur.sopa?.id===id;
+  if(slot==='assado')return cur.assado?.id===id;
+  return false;
+}
+
+function showTip(tipId){
+  const el=$(tipId);if(!el)return;
+  el.style.display='flex';
+  /* tip fica visível enquanto o item correspondente tiver seleção,
+     some quando o usuário desmarca tudo naquela categoria */
+}
+function hideTip(tipId){const el=$(tipId);if(el)el.style.display='none';}
+
+function updateFloatBtn(){
+  const fb=$('float-save');if(!fb)return;
+  const hasAny=cur.carbo.length||cur.prot.length||cur.leg.length||cur.esp||cur.sopa||cur.assado;
+  fb.style.display=hasAny?'block':'none';
+}
+function renderG(cat,slot){
+  const el=$('g-'+cat);if(!el)return;
+  /* dimming: blocos fixos ficam acinzentados se já há carbo/prot/leg selecionado
+     carbo/prot ficam acinzentados se há esp/sopa/assado selecionado */
+  const dimFixed = (slot==='esp'||slot==='sopa'||slot==='assado') && (cur.carbo.length||cur.prot.length||cur.leg.length);
+  const dimBase  = (slot==='carbo'||slot==='prot') && (cur.esp||cur.sopa||cur.assado);
+  el.innerHTML=CDP[cat].map(it=>{
+    const sel=isSel(it.id,slot),g=getG(it.id,slot),fx=!!it.fixo;
+    const cp=fx?it.preco:rH(it.pg*g);
+    const nd=it.nome.length>36?it.nome.slice(0,34)+'…':it.nome;
+    const dim=!sel&&(dimFixed||dimBase);
+    return `<div class="item${sel?' sel':''}${dim?' dimmed':''}" onclick="selItem('${it.id}','${slot}')">
+      <div class="iname">${nd}</div>${it.desc?`<div class="idesc">${it.desc}</div>`:''}
+      <div class="ibase">${it.base}g base</div><div class="ibase-price">${fR(it.preco)}</div>
+      ${sel?`<div class="ictl" onclick="event.stopPropagation()">
+        ${!fx?`<div class="ctl-row"><span class="ctl-lbl">Gramas</span><input class="ctl-inp" type="number" value="${g}" min="1" step="10" oninput="setG('${it.id}','${slot}',+this.value,event)"></div>
+        <div class="icalc" id="cp-${it.id}">${fR(cp)}</div><div class="icalc-base" id="cb-${it.id}">base ${it.base}g = ${fR(it.preco)}</div>`
+        :`<div class="icalc">${fR(it.preco)}</div><div class="icalc-base">${it.base}g · preço fixo</div>`}
+        <button class="idesel" onclick="selItem('${it.id}','${slot}')">remover ✕</button>
+      </div>`:''}
+    </div>`;
+  }).join('');
+}
+function renderAllG(){renderG('carbo','carbo');renderG('prot','prot');renderG('leg','leg');renderG('esp','esp');renderG('sopa','sopa');renderG('assados','assado')}
+
+function getParts(){
+  const p=[];
+  if(cur.esp){
+    const it=ALL[cur.esp.id];p.push({nome:it.nome,g:cur.esp.g,preco:rH(it.pg*cur.esp.g),tipo:'esp'});
+    cur.leg.forEach(l=>{const it=ALL[l.id];p.push({nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+  } else if(cur.sopa){
+    const it=ALL[cur.sopa.id];p.push({nome:it.nome,g:it.base,preco:it.preco,tipo:'sopa'});
+    cur.leg.forEach(l=>{const it=ALL[l.id];p.push({nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+  } else if(cur.assado){
+    const it=ALL[cur.assado.id];p.push({nome:it.nome,g:it.base,preco:it.preco,tipo:'assado'});
+    cur.leg.forEach(l=>{const it=ALL[l.id];p.push({nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+  } else {
+    cur.carbo.forEach(c=>{const it=ALL[c.id];p.push({nome:it.nome,g:c.g,preco:rH(it.pg*c.g),tipo:'carbo'})});
+    cur.prot.forEach(c=>{const it=ALL[c.id];p.push({nome:it.nome,g:c.g,preco:rH(it.pg*c.g),tipo:'prot'})});
+    cur.leg.forEach(l=>{const it=ALL[l.id];p.push({nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+  }
+  return p;
+}
+function updatePrev(){
+  const bp=$('bprev'),pr=$('prev-rows'),pe=$('price-inp'),pn=$('prev-num');
+  if(pn)pn.textContent='Marmita '+(marmitas.length+1);
+  const parts=getParts();
+  if(!parts.length){bp.style.display='none';return}
+  bp.style.display='block';
+  const total=rH(parts.reduce((a,p)=>a+p.preco,0));
+  pr.innerHTML=parts.map(p=>`<div class="prev-row"><span class="prev-name">${p.nome}</span><span class="prev-g">${p.g}g</span><span class="prev-p">${fR(p.preco)}</span></div>`).join('');
+  pe.value=total;
+}
+function saveM(){
+  const parts=getParts();if(!parts.length){toast('Selecione ao menos um item');return}
+  const preco=+(($('price-inp')?.value)||0)||0;
+  marmitas.push({partes:parts,preco});
+  clearB();renderChips();refreshSide();
+  $('bb-num').textContent='Marmita #'+(marmitas.length+1);
+  updateFloatBtn();
+  toast('Marmita #'+marmitas.length+' salva ✓');
+}
+/* ─── CUPOM DE DESCONTO ────────────────────────────────
+   Cupons são definidos aqui — você edita esta lista.
+   Cada cupom tem: código, tipo ('fixo' ou 'pct'), valor.
+   'fixo' = R$ valor de desconto
+   'pct'  = porcentagem sobre o subtotal
+──────────────────────────────────────────────────── */
+let CUPONS = {
+  'MERMITA10': {tipo:'fixo', valor:10, descricao:'R$ 10,00 de desconto'},
+  'MERMITA15': {tipo:'fixo', valor:15, descricao:'R$ 15,00 de desconto'},
+  'BEMVINDA':  {tipo:'fixo', valor:5,  descricao:'R$ 5,00 de boas-vindas'},
+  'FIDELIDADE':{tipo:'pct',  valor:10, descricao:'10% de desconto'},
+};
+let cupomAtivo = null; // {codigo, valor calculado}
+
+function aplicarCupom(){
+  const cod=($('cupom-inp')?.value||'').trim().toUpperCase();
+  const msg=$('cupom-msg'), ok=$('cupom-ok'), dr=$('desc-row');
+  if(!cod){toast('Digite um código de cupom');return}
+  const cupom=CUPONS[cod];
+  if(!cupom){
+    msg.style.display='block';msg.style.color='#c0392b';msg.textContent='Cupom inválido ou expirado.';
+    ok.style.display='none';cupomAtivo=null;
+    if(dr)dr.style.display='none';
+    refreshSide();return;
+  }
+  const sub=marmitas.reduce((a,m)=>a+m.preco,0);
+  const descVal=cupom.tipo==='pct'?rH(sub*cupom.valor/100):cupom.valor;
+  cupomAtivo={codigo:cod,valor:descVal,descricao:cupom.descricao};
+  msg.style.display='block';msg.style.color='var(--g700)';msg.textContent=cupom.descricao;
+  ok.style.display='inline';
+  toast('Cupom '+cod+' aplicado! '+cupom.descricao+' 🎉');
+  refreshSide();
+}
+
+function removeCupom(){
+  cupomAtivo=null;
+  const inp=$('cupom-inp'),msg=$('cupom-msg'),ok=$('cupom-ok'),dr=$('desc-row');
+  if(inp)inp.value='';
+  if(msg){msg.style.display='none';}
+  if(ok)ok.style.display='none';
+  if(dr)dr.style.display='none';
+  refreshSide();
+}
+
+function delM(i){marmitas.splice(i,1);renderChips();refreshSide();$('bb-num').textContent='Marmita #'+(marmitas.length+1)}
+function editMP(i){const np=prompt(`Preço da Marmita #${i+1}:`,marmitas[i].preco);if(np===null)return;const v=parseFloat(np);if(!isNaN(v)){marmitas[i].preco=v;renderChips();refreshSide()}}
+function clearB(){Object.assign(cur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});hideTip('prot-tip');hideTip('leg-tip');renderAllG();updatePrev();updateFloatBtn()}
+function renderChips(){
+  const el=$('chips');
+  $('bb-num').textContent='Marmita #'+(marmitas.length+1);
+  if(!marmitas.length){el.innerHTML='<div class="chip-empty">Nenhuma marmita salva — monte abaixo</div>';return}
+  el.innerHTML=marmitas.map((m,i)=>{
+    const lb=m.partes.map(p=>`${p.nome}${p.g?` (${p.g}g)`:''}`).join(' + ');
+    const sh=lb.length>46?lb.slice(0,44)+'…':lb;
+    return `<div class="chip" onclick="editMP(${i})" title="Clique para editar preço">
+      <span class="chip-n">#${i+1}</span>
+      <span><div class="chip-name">${sh}</div><div class="chip-price">${fR(m.preco)}</div></span>
+      <button class="chip-del" onclick="event.stopPropagation();delM(${i})">✕</button>
+    </div>`;
+  }).join('');
+}
+function refreshSide(){
+  const sm=$('side-ms'),st=$('side-tots'),sc=$('side-cnt');
+  const desc=cupomAtivo?.valor||0,taxa=user?.taxa||0;
+  const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
+  if(sc)sc.textContent=marmitas.length?marmitas.length+' iten'+(marmitas.length>1?'s':''):'';
+  if(!marmitas.length){sm.innerHTML='<div class="side-empty">Nenhuma marmita ainda</div>';if(st)st.style.display='none';return}
+  sm.innerHTML=marmitas.map((m,i)=>{
+    const items=m.partes.map(p=>`${p.nome}${p.g?` (${p.g}g)`:''}`).join('<br>');
+    return `<div class="sm"><div class="sm-head"><span class="sm-num">Marmita #${i+1}</span><span class="sm-price">${fR(m.preco)}</span><button class="sm-del" onclick="delM(${i})">✕</button></div><div class="sm-items">${items}</div></div>`;
+  }).join('');
+  if(st){
+    st.style.display='block';
+    $('s-sub').textContent=fR(sub);
+    $('s-taxa').textContent=fR(taxa);
+    $('s-total').textContent=fR(total);
+    const dr=$('desc-row'),dv=$('s-desc-val');
+    if(dr){dr.style.display=desc>0?'flex':'none';}
+    if(dv)dv.textContent='− '+fR(desc);
+  }
+}
+function goRes(){if(!marmitas.length){toast('Monte ao menos uma marmita');return}showScreen('resumo')}
+
+/* resumo */
+function buildTxt(){
+  const taxa=user?.taxa||0,desc=cupomAtivo?.valor||0;
+  const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
+  const lines=marmitas.map((m,i)=>{
+    const itens=m.partes.map(p=>`    · ${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}`).join('\n');
+    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}`;
+  }).join('\n\n');
+  return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${user?.nome||'—'}\nWhatsApp: ${user?.tel||'—'}\nData: ${new Date().toLocaleDateString('pt-BR')}\nTotal: ${marmitas.length} marmita${marmitas.length>1?'s':''}\n\n${lines}${desc>0?`\n\nCupom ${cupomAtivo?.codigo||''}: − ${fR(desc)}`:''}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${user?.endereco||'A informar'}`;
+}
+function renderResumo(){
+  if(!marmitas.length)return;
+  const taxa=user?.taxa||0,desc=cupomAtivo?.valor||0;
+  const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
+  $('res-client').innerHTML=`
+    <div><div class="rcl">Cliente</div><div class="rcv">${user?.nome||'—'}</div></div>
+    <div><div class="rcl">WhatsApp</div><div class="rcv">${user?.tel||'—'}</div></div>
+    <div><div class="rcl">Data</div><div class="rcv">${new Date().toLocaleDateString('pt-BR')}</div></div>
+    <div><div class="rcl">Região</div><div class="rcv">${user?.zonaNome||'—'}</div></div>
+    <div style="grid-column:1/-1"><div class="rcl">Endereço de entrega</div><div class="rcv">${user?.endereco||'A informar'}</div></div>`;
+  $('res-ms').innerHTML=marmitas.map((m,i)=>`
+    <div class="res-m"><div class="res-m-head"><span class="res-m-num">Marmita #${i+1}</span><span class="res-m-price">${fR(m.preco)}</span></div>
+    <div class="res-m-items">${m.partes.map(p=>`<div class="res-m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}</div></div>`).join('');
+  $('res-tots').innerHTML=`
+    <div class="res-tr"><span>Subtotal</span><span>${fR(sub)}</span></div>
+    ${desc>0?`<div class="res-tr"><span>Cupom ${cupomAtivo?.codigo||''}</span><span style="color:var(--g700);font-weight:700">− ${fR(desc)}</span></div>`:''}
+    <div class="res-tr"><span>Taxa de entrega (${user?.zonaNome||''})</span><span>${fR(taxa)}</span></div>
+    <div class="res-tr grand"><span>Total</span><span>${fR(total)}</span></div>`;
+  const txt=buildTxt();
+  $('wpp-prev').style.display='block';$('wpp-prev').textContent=txt;
+}
+function copyOrc(){navigator.clipboard.writeText(buildTxt()).then(()=>toast('Orçamento copiado ✓'))}
+function sendWpp(){
+  if(!marmitas.length){toast('Monte ao menos uma marmita');return}
+  const taxa=user?.taxa||0,desc=cupomAtivo?.valor||0;
+  const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
+  const order={
+    id:'ord_'+Date.now()+'_'+Math.random().toString(36).slice(2,6),
+    timestamp:new Date().toISOString(),
+    status:'novo',
+    client:{nome:user?.nome||'—',tel:user?.tel||'—',zona:user?.zona||'',zonaNome:user?.zonaNome||'—',endereco:user?.endereco||'—',taxa},
+    marmitas:JSON.parse(JSON.stringify(marmitas)),
+    cupom:cupomAtivo?{codigo:cupomAtivo.codigo,valor:cupomAtivo.valor}:null,
+    subtotal:sub,total,extras:[]
+  };
+  const saved=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
+  saved.unshift(order);
+  localStorage.setItem('mermitas_orders',JSON.stringify(saved));
+  window.open('https://wa.me/5548996107844?text='+encodeURIComponent(buildTxt()),'_blank');
+}
+
+/* perfil */
+function renderPerfil(){
+  if(!user)return;
+  $('p-av').textContent=user.nome[0].toUpperCase();
+  $('p-nome').textContent=user.nome;
+  $('p-sub').textContent=user.email||user.tel||'';
+  $('pp-tel').textContent=user.tel||'—';
+  $('pp-zona').textContent=user.zonaNome||'—';
+  $('pp-end').textContent=user.endereco||'—';
+  $('pp-taxa').textContent=user.taxa!==undefined?fR(user.taxa):'—';
+}
+
+/* ═══════════════════════════════════════════
+   ADMIN PANEL
+═══════════════════════════════════════════ */
+const ADMIN_PW = 'mermitas2025';
+let adminLogado = false;
+let adminOrders = [];
+let adminInterval = null;
+let expandedOrders = new Set();
+
+/* entry: ?admin na URL */
+if(new URLSearchParams(location.search).get('admin')!==null) showScreen('admin-login');
+
+function doAdminLogin(){
+  const pw=$('admin-pw')?.value||'';
+  const err=$('admin-pw-err');
+  if(pw===ADMIN_PW){
+    adminLogado=true;err.style.display='none';
+    showScreen('admin');
+    startAdminRealtime();
+    renderAdminOrders();
+    renderAdminCupons();
+    renderAdminCdp();
+    renderAdminZonas();
+  } else {
+    err.style.display='block';
+  }
+}
+
+function doAdminLogout(){
+  adminLogado=false;stopAdminRealtime();showScreen('home');
+}
+
+function showAdminTab(tab){
+  ['pedidos','cupons','cardapio','zonas'].forEach(t=>{
+    $('admin-section-'+t)?.classList.toggle('active',t===tab);
+    $('atab-'+t)?.classList.toggle('active',t===tab);
+  });
+  if(tab==='zonas') renderAdminZonas();
+}
+
+/* ── realtime ── */
+function startAdminRealtime(){
+  stopAdminRealtime();
+  adminInterval=setInterval(()=>{
+    const prev=adminOrders.length;
+    loadAdminOrders();
+    renderAdminOrders();
+    if(adminOrders.length>prev) toast('Novo pedido chegou! 🍱');
+  },5000);
+}
+function stopAdminRealtime(){clearInterval(adminInterval);}
+
+/* ── storage ── */
+function loadAdminOrders(){
+  adminOrders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
+}
+function persistOrders(orders){
+  localStorage.setItem('mermitas_orders',JSON.stringify(orders));
+  loadAdminOrders();
+}
+
+/* ── orders render ── */
+const ST_LABEL={novo:'Novo',visto:'Visto',preparo:'Em preparo',entregue:'Entregue'};
+const ST_NEXT ={novo:'visto',visto:'preparo',preparo:'entregue',entregue:'novo'};
+const ST_CLS  ={novo:'st-novo',visto:'st-visto',preparo:'st-preparo',entregue:'st-entregue'};
+
+function renderAdminOrders(){
+  loadAdminOrders();
+  const el=$('admin-orders-list'),info=$('admin-orders-info');
+  if(!el)return;
+  if(!adminOrders.length){
+    el.innerHTML='<div style="text-align:center;padding:60px 0;color:rgba(255,255,255,.2);font-size:14px">Nenhum pedido ainda.<br>Pedidos aparecem aqui quando o cliente clica em "Enviar pelo WhatsApp".</div>';
+    if(info)info.textContent='Aguardando pedidos…';return;
+  }
+  const novos=adminOrders.filter(o=>o.status==='novo').length;
+  if(info)info.textContent=`${adminOrders.length} pedido${adminOrders.length>1?'s':''} · ${novos} novo${novos!==1?'s':''}`;
+  el.innerHTML=adminOrders.map(o=>renderOrderCard(o)).join('');
+}
+
+function renderOrderCard(o){
+  const dt=new Date(o.timestamp);
+  const hora=dt.toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
+  const dia=dt.toLocaleDateString('pt-BR');
+  const exp=expandedOrders.has(o.id);
+  const extraTotal=(o.extras||[]).reduce((a,e)=>a+e.preco,0);
+  const grandTotal=o.total+extraTotal;
+
+  const itemsHtml=o.marmitas.map((m,i)=>{
+    const ps=m.partes.map(p=>`${p.nome}${p.g?' ('+p.g+'g)':''} — ${fR(p.preco)}`).join('<br>');
+    return `<div style="margin-bottom:8px"><span style="font-size:10px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.06em">Marmita #${i+1} — ${fR(m.preco)}</span><br>${ps}</div>`;
+  }).join('');
+
+  const extrasHtml=(o.extras||[]).map(ex=>
+    `<div style="margin-bottom:6px;padding:7px 10px;background:rgba(76,175,114,.08);border-radius:6px;border-left:2px solid #4CAF72">
+      <span class="extra-tag">+ Admin</span><br>
+      ${ex.nome}${ex.g?' ('+ex.g+'g)':''} — ${fR(ex.preco)}
+    </div>`
+  ).join('');
+
+  const subtotaisHtml=`<div style="font-size:12px;color:rgba(255,255,255,.35);margin-bottom:10px">
+    Subtotal: ${fR(o.subtotal)} · Entrega: ${fR(o.client.taxa||0)}${o.cupom?` · Cupom ${o.cupom.codigo}: −${fR(o.cupom.valor)}`:''}${extraTotal>0?` · Extras: +${fR(extraTotal)}`:''}
+  </div>`;
+
+  const extraFormHtml=`
+    <div id="ef-${o.id}" class="extra-form" style="display:none">
+      <div style="font-size:11px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px">Adicionar item ao pedido do cliente</div>
+      <div style="display:grid;grid-template-columns:1fr 90px 100px auto;gap:8px;align-items:end">
+        <div><label class="albl">Nome do item</label><input id="ei-n-${o.id}" class="ainput" type="text" placeholder="Ex: Frango extra grelhado"></div>
+        <div><label class="albl">Gramas</label><input id="ei-g-${o.id}" class="ainput" type="number" placeholder="100" min="0" step="10" style="text-align:right"></div>
+        <div><label class="albl">Valor (R$)</label><input id="ei-v-${o.id}" class="ainput" type="number" placeholder="0,00" min="0" step="0.5" style="text-align:right"></div>
+        <button onclick="addExtraToOrder('${o.id}')" style="background:#1D5C3A;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:9px 16px;border-radius:8px;cursor:pointer;height:38px;white-space:nowrap">Salvar ✓</button>
+      </div>
+    </div>`;
+
+  return `<div class="oc ${o.status==='novo'?'novo':''}" id="oc-${o.id}">
+    <div class="oc-head">
+      <div>
+        <div class="oc-id">#${o.id.slice(-6).toUpperCase()} · ${dia} ${hora}</div>
+        <div class="oc-nome">${o.client.nome}</div>
+        <div class="oc-info">📱 ${o.client.tel}<br>📍 ${o.client.zonaNome||'—'} · Taxa: ${fR(o.client.taxa||0)}<br>📬 ${o.client.endereco||'—'}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
+        <button class="oc-status ${ST_CLS[o.status]}" onclick="cycleStatus('${o.id}')" title="Clique para avançar status">${ST_LABEL[o.status]}</button>
+        <div class="oc-total">${fR(grandTotal)}</div>
+      </div>
+    </div>
+    ${exp?`<div class="oc-items">${itemsHtml}${extrasHtml}</div>${subtotaisHtml}`:''}
+    <div class="oc-acts">
+      <button class="abtn abtn-ghost" onclick="toggleOrder('${o.id}')">${exp?'Fechar ▲':'Ver detalhes ▼'}</button>
+      ${exp?`
+        <button class="abtn abtn-green" onclick="toggleExtraForm('${o.id}')">+ Adicionar item</button>
+        <button class="abtn abtn-wpp" onclick="sendAdminWpp('${o.id}')">WhatsApp</button>
+        <button class="abtn abtn-red" onclick="deleteOrder('${o.id}')">Excluir</button>
+      `:''}
+    </div>
+    ${exp?extraFormHtml:''}
+  </div>`;
+}
+
+function toggleOrder(id){
+  expandedOrders.has(id)?expandedOrders.delete(id):expandedOrders.add(id);
+  renderAdminOrders();
+}
+function toggleExtraForm(id){
+  const f=$('ef-'+id);if(f)f.style.display=f.style.display==='none'?'block':'none';
+}
+function cycleStatus(id){
+  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  o.status=ST_NEXT[o.status]||'novo';
+  persistOrders(orders);renderAdminOrders();toast('Status: '+ST_LABEL[o.status]);
+}
+function deleteOrder(id){
+  if(!confirm('Excluir este pedido?'))return;
+  expandedOrders.delete(id);
+  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]').filter(o=>o.id!==id);
+  persistOrders(orders);renderAdminOrders();
+}
+function addExtraToOrder(id){
+  const nome=($('ei-n-'+id)?.value||'').trim();
+  const g=+($('ei-g-'+id)?.value||0)||null;
+  const preco=+($('ei-v-'+id)?.value||0);
+  if(!nome){toast('Digite o nome do item');return}
+  const orders=JSON.parse(localStorage.getItem('mermitas_orders')||'[]');
+  const o=orders.find(x=>x.id===id);if(!o)return;
+  if(!o.extras)o.extras=[];
+  o.extras.push({nome,g,preco});
+  persistOrders(orders);renderAdminOrders();toast('Item adicionado ✓');
+}
+function sendAdminWpp(id){
+  const o=adminOrders.find(x=>x.id===id);if(!o)return;
+  const extraTotal=(o.extras||[]).reduce((a,e)=>a+e.preco,0);
+  const grandTotal=o.total+extraTotal;
+  const lines=o.marmitas.map((m,i)=>{
+    const itens=m.partes.map(p=>`    · ${p.nome}${p.g?' ('+p.g+'g)':''} — ${fR(p.preco)}`).join('\n');
+    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}`;
+  }).join('\n\n');
+  const extrasLines=(o.extras||[]).length?'\n\n*Itens adicionados:*\n'+(o.extras.map(e=>`  · ${e.nome}${e.g?' ('+e.g+'g)':''} — ${fR(e.preco)}`).join('\n')):'';
+  const cupomLine=o.cupom?`\nCupom ${o.cupom.codigo}: − ${fR(o.cupom.valor)}`:'';
+  const txt=`🍱 *Pedido Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${o.client.nome}\nWhatsApp: ${o.client.tel}\nData: ${new Date(o.timestamp).toLocaleDateString('pt-BR')}\nTotal: ${o.marmitas.length} marmita${o.marmitas.length>1?'s':''}\n\n${lines}${extrasLines}${cupomLine}\nTaxa de entrega: ${fR(o.client.taxa||0)}\n\n*TOTAL: ${fR(grandTotal)}*\n\nEndereço: ${o.client.endereco||'A informar'}`;
+  const tel=o.client.tel.replace(/\D/g,'');
+  window.open('https://wa.me/'+(tel.length>=10?tel:'5548'+tel)+'?text='+encodeURIComponent(txt),'_blank');
+}
+
+/* ── cupons admin ── */
+function renderAdminCupons(){
+  const el=$('admin-cupons-list');if(!el)return;
+  const keys=Object.keys(CUPONS);
+  if(!keys.length){el.innerHTML='<div style="color:rgba(255,255,255,.25);font-size:13px;margin-bottom:16px">Nenhum cupom cadastrado.</div>';return}
+  el.innerHTML=keys.map(k=>{
+    const c=CUPONS[k];
+    const desc=c.tipo==='fixo'?`R$ ${c.valor.toFixed(2)} de desconto`:`${c.valor}% de desconto`;
+    return `<div class="cpn-card">
+      <div><div class="cpn-code">${k}</div><div class="cpn-meta">${desc} · tipo: ${c.tipo==='fixo'?'valor fixo':'percentual'}</div></div>
+      <button onclick="delCupomAdmin('${k}')" style="background:rgba(192,57,43,.18);border:none;color:#E74C3C;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer">Excluir</button>
+    </div>`;
+  }).join('');
+}
+function addCupomAdmin(){
+  const cod=($('nc-cod')?.value||'').trim().toUpperCase();
+  const tipo=$('nc-tipo')?.value||'fixo';
+  const val=+($('nc-val')?.value||0);
+  if(!cod||val<=0){toast('Preencha código e valor');return}
+  const descricao=tipo==='fixo'?`R$ ${val.toFixed(2)} de desconto`:`${val}% de desconto`;
+  CUPONS[cod]={tipo,valor:val,descricao};
+  $('nc-cod').value='';$('nc-val').value='';
+  renderAdminCupons();toast('Cupom '+cod+' criado ✓');
+}
+function delCupomAdmin(cod){
+  delete CUPONS[cod];
+  if(cupomAtivo?.codigo===cod){cupomAtivo=null;refreshSide();}
+  renderAdminCupons();toast('Cupom removido');
+}
+
+/* ── zonas admin ── */
+function renderAdminZonas(){
+  const el=$('admin-zonas-list');if(!el)return;
+  if(!ZONAS.length){el.innerHTML='<div style="color:rgba(255,255,255,.25);font-size:13px;padding:16px 0">Nenhuma zona cadastrada.</div>';return}
+  el.innerHTML=ZONAS.map((z,i)=>`
+    <div class="cdp-row" style="grid-template-columns:80px 1fr 1fr 100px auto">
+      <span style="font-size:11px;font-weight:800;color:#4CAF72">${z.key}</span>
+      <input id="zn-${i}" value="${z.nome.replace(/"/g,'&quot;')}" placeholder="Nome da zona">
+      <input id="zs-${i}" value="${z.sub.replace(/"/g,'&quot;')}" placeholder="Descrição">
+      <input id="zt-${i}" type="number" value="${z.taxa}" min="0" step="5" style="text-align:right" placeholder="0">
+      <div style="display:flex;gap:4px">
+        <button onclick="saveZonaRow(${i})" title="Salvar" style="background:rgba(76,175,114,.2);border:none;color:#4CAF72;border-radius:6px;padding:5px 10px;cursor:pointer;font-size:12px;font-weight:700;font-family:'Nunito',sans-serif">Salvar</button>
+        <button onclick="delZonaAdmin(${i})" title="Remover" style="background:rgba(192,57,43,.15);border:none;color:#E74C3C;border-radius:6px;padding:5px 8px;cursor:pointer;font-size:12px">✕</button>
+      </div>
+    </div>`).join('');
+}
+function saveZonaRow(i){
+  ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
+  ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
+  ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
+  applyZonaChanges();
+  renderAdminZonas();
+  toast('Zona "'+ZONAS[i].nome+'" salva ✓');
+}
+function updZona2(i,field,val){
+  ZONAS[i][field]=field==='taxa'?+val:val;
+  applyZonaChanges();
+  toast('Zona salva ✓');
+}
+function delZonaAdmin(i){
+  if(!confirm('Remover esta zona?'))return;
+  ZONAS.splice(i,1);
+  applyZonaChanges();
+  renderAdminZonas();
+  toast('Zona removida');
+}
+function addZonaAdmin(){
+  const key=($('nz-key')?.value||'').trim();
+  const nome=($('nz-nome')?.value||'').trim();
+  const sub=($('nz-sub')?.value||'').trim()||'taxa de entrega';
+  const taxa=+($('nz-taxa')?.value||0);
+  if(!key||!nome){toast('Preencha chave e nome');return}
+  if(ZONAS.find(z=>z.key===key)){toast('Chave já existe');return}
+  ZONAS.push({key,nome,taxa,sub});
+  applyZonaChanges();
+  renderAdminZonas();
+  $('nz-key').value='';$('nz-nome').value='';$('nz-sub').value='';$('nz-taxa').value='';
+  toast('Zona "'+nome+'" adicionada ✓');
+}
+
+/* ── cardápio admin ── */
+const CDP_LABELS={carbo:'Carboidratos',prot:'Proteínas',leg:'Legumes',esp:'Marmitas especiais',sopa:'Sopas',assados:'Assados'};
+
+function renderAdminCdp(){
+  const el=$('admin-cdp-editor');if(!el)return;
+  el.innerHTML=Object.entries(CDP).map(([cat,items])=>`
+    <div class="cdp-cat-block">
+      <div class="cdp-cat-title">${CDP_LABELS[cat]||cat}</div>
+      <div style="display:grid;grid-template-columns:56px 1fr 80px 80px 44px;gap:4px;padding:0 12px 6px;color:rgba(255,255,255,.25);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em">
+        <span>ID</span><span>Nome</span><span style="text-align:right">Base(g)</span><span style="text-align:right">Preço R$</span><span></span>
+      </div>
+      ${items.map((it,i)=>`<div class="cdp-row">
+        <span style="font-size:11px;font-weight:800;color:#4CAF72">${it.id}</span>
+        <input value="${it.nome.replace(/"/g,'&quot;')}" onchange="updCdp('${cat}',${i},'nome',this.value)">
+        <input type="number" value="${it.base}" onchange="updCdp('${cat}',${i},'base',+this.value)" style="text-align:right" min="1">
+        <input type="number" value="${it.preco}" step="0.5" onchange="updCdp('${cat}',${i},'preco',+this.value)" style="text-align:right" min="0">
+        <button onclick="delCdpItem('${cat}',${i})" title="Remover" style="background:rgba(192,57,43,.15);border:none;color:#E74C3C;border-radius:6px;padding:4px 6px;cursor:pointer;font-size:12px">✕</button>
+      </div>`).join('')}
+      <button onclick="addCdpItem('${cat}')" style="margin-top:6px;background:rgba(76,175,114,.08);border:1px dashed rgba(76,175,114,.25);color:#4CAF72;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:7px;border-radius:8px;cursor:pointer;width:100%">+ Adicionar item</button>
+    </div>
+  `).join('');
+}
+function updCdp(cat,i,field,val){
+  CDP[cat][i][field]=val;
+  if(field==='base'||field==='preco'){
+    const it=CDP[cat][i];
+    if(!it.fixo&&it.base&&it.preco) it.pg=it.preco/it.base;
+  }
+  ALL[CDP[cat][i].id]=CDP[cat][i];
+  renderAllG();
+}
+function delCdpItem(cat,i){
+  const id=CDP[cat][i].id;
+  CDP[cat].splice(i,1);delete ALL[id];
+  renderAdminCdp();renderAllG();toast('Item removido');
+}
+function addCdpItem(cat){
+  const nome=prompt('Nome do novo item:');if(!nome)return;
+  const base=+prompt('Gramagem base (g):',100)||100;
+  const preco=+prompt('Preço base (R$):',10)||10;
+  const fixo=cat==='sopa'||cat==='assados';
+  const prefix={carbo:'C',prot:'P',leg:'L',esp:'E',sopa:'S',assados:'A'}[cat]||'X';
+  const id=prefix+(Date.now()%100000);
+  const newItem={id,nome,base,preco,...(fixo?{fixo:true}:{pg:preco/base})};
+  CDP[cat].push(newItem);ALL[id]=newItem;
+  renderAdminCdp();renderAllG();toast('Item adicionado ✓');
+}
+
+/* init */
+renderCdpGrid('carbo');
+renderZonaSelect();
+renderZonasPub();
+</script>
+</body>
+</html>
