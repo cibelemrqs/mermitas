@@ -933,8 +933,9 @@ async function doCad(){
   const{data,error}=await sb.auth.signUp({email,password:senha});
   if(error){btn.textContent='Criar conta e montar pedido →';btn.disabled=false;errEl.textContent=error.message;errEl.style.display='block';return}
   const uid=data.user.id;
-  await sb.from('clientes').insert({id:uid,nome:n,tel:t,zona:z,zona_nome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0});
+  const{error:perr}=await sb.from('clientes').insert({id:uid,nome:n,tel:t,zona:z,zona_nome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0});
   btn.textContent='Criar conta e montar pedido →';btn.disabled=false;
+  if(perr){errEl.textContent='Conta criada, mas erro ao salvar perfil: '+perr.message;errEl.style.display='block';}
   user={id:uid,nome:n,tel:t,email,zona:z,zonaNome:ZONA_N[z]||z,endereco:e||'A informar',taxa:ZONA_T[z]||0};
   updateNav();showScreen('pedido');toast('Conta criada! Bem-vinda, '+n.split(' ')[0]+' 🎉');
 }
