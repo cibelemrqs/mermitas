@@ -815,19 +815,21 @@ function buildZonaMaps(){
   window.ZONA_T=Object.fromEntries(ZONAS.map(z=>[z.key,z.taxa]));
   window.ZONA_N=Object.fromEntries(ZONAS.map(z=>[z.key,z.nome]));
 }
-function saveZonas(){
-  localStorage.setItem('mermitas_zonas',JSON.stringify(ZONAS));
+async function saveZonas(){
+  await sb.from('zonas').upsert(ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1})));
 }
-function loadZonas(){
-  const saved=localStorage.getItem('mermitas_zonas');
-  if(saved){try{ZONAS=JSON.parse(saved);}catch(e){}}
-}
-function applyZonaChanges(){
+async function loadZonas(){
+  const{data}=await sb.from('zonas').select('*').order('ordem');
+  if(data&&data.length) ZONAS=data;
   buildZonaMaps();
-  saveZonas();
   renderZonaSelect();
   renderZonasPub();
-  /* se usuário logado, atualiza taxa conforme nova tabela */
+}
+async function applyZonaChanges(){
+  buildZonaMaps();
+  await saveZonas();
+  renderZonaSelect();
+  renderZonasPub();
   if(user&&user.zona){
     user.taxa=ZONA_T[user.zona]??user.taxa;
     user.zonaNome=ZONA_N[user.zona]||user.zonaNome;
@@ -845,7 +847,6 @@ function renderZonasPub(){
   const el=$('zonas-pub');if(!el)return;
   el.innerHTML=ZONAS.map(z=>`<div class="zona"><h4>${z.nome}</h4><div class="zona-p">${z.taxa===0?'Grátis':'R$ '+z.taxa}</div><div class="zona-s">${z.sub}</div></div>`).join('');
 }
-loadZonas();
 buildZonaMaps();
 const ALL={};Object.values(CDP).forEach(a=>a.forEach(i=>ALL[i.id]=i));
 
@@ -854,10 +855,11 @@ const SUPA_URL='https://tetimspqqcoblbipexuv.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRldGltc3BxcWNvYmxiaXBleHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTM4NDQsImV4cCI6MjA5MTc2OTg0NH0.UKJcgtuy_E8dLzwZMVrxJSHNpdHOheUNAWZl8Zhl9_Y';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-/* restaura sessão ao carregar */
+/* restaura sessão e zonas ao carregar */
 sb.auth.getSession().then(({data:{session}})=>{
   if(session) _loadProfile(session.user.id);
 });
+loadZonas();
 
 async function _loadProfile(uid){
   const{data}=await sb.from('clientes').select('*').eq('id',uid).single();
@@ -1537,27 +1539,29 @@ function renderAdminZonas(){
       </div>
     </div>`).join('');
 }
-function saveZonaRow(i){
+async function saveZonaRow(i){
   ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
   ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
   ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
-  applyZonaChanges();
+  await applyZonaChanges();
   renderAdminZonas();
   toast('Zona "'+ZONAS[i].nome+'" salva ✓');
 }
-function updZona2(i,field,val){
+async function updZona2(i,field,val){
   ZONAS[i][field]=field==='taxa'?+val:val;
-  applyZonaChanges();
+  await applyZonaChanges();
   toast('Zona salva ✓');
 }
-function delZonaAdmin(i){
+async function delZonaAdmin(i){
   if(!confirm('Remover esta zona?'))return;
+  const key=ZONAS[i].key;
   ZONAS.splice(i,1);
-  applyZonaChanges();
+  await sb.from('zonas').delete().eq('key',key);
+  await applyZonaChanges();
   renderAdminZonas();
   toast('Zona removida');
 }
-function addZonaAdmin(){
+async function addZonaAdmin(){
   const key=($('nz-key')?.value||'').trim();
   const nome=($('nz-nome')?.value||'').trim();
   const sub=($('nz-sub')?.value||'').trim()||'taxa de entrega';
@@ -1565,7 +1569,7 @@ function addZonaAdmin(){
   if(!key||!nome){toast('Preencha chave e nome');return}
   if(ZONAS.find(z=>z.key===key)){toast('Chave já existe');return}
   ZONAS.push({key,nome,taxa,sub});
-  applyZonaChanges();
+  await applyZonaChanges();
   renderAdminZonas();
   $('nz-key').value='';$('nz-nome').value='';$('nz-sub').value='';$('nz-taxa').value='';
   toast('Zona "'+nome+'" adicionada ✓');
@@ -1621,8 +1625,6 @@ function addCdpItem(cat){
 
 /* init */
 renderCdpGrid('carbo');
-renderZonaSelect();
-renderZonasPub();
 </script>
 </body>
 </html>
