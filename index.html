@@ -819,11 +819,16 @@ async function saveZonas(){
   await sb.from('zonas').upsert(ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1})));
 }
 async function loadZonas(){
-  const{data}=await sb.from('zonas').select('*').order('ordem');
-  if(data&&data.length) ZONAS=data;
-  buildZonaMaps();
   renderZonaSelect();
   renderZonasPub();
+  const{data,error}=await sb.from('zonas').select('*').order('ordem');
+  if(error){console.error('Erro ao carregar zonas:',error);return;}
+  if(data&&data.length){
+    ZONAS=data;
+    buildZonaMaps();
+    renderZonaSelect();
+    renderZonasPub();
+  }
 }
 async function applyZonaChanges(){
   buildZonaMaps();
