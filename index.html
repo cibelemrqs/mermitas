@@ -823,6 +823,7 @@ async function loadZonas(){
   renderZonaSelect();
   renderZonasPub();
   const{data,error}=await sb.from('zonas').select('*').order('ordem');
+  console.log('loadZonas →',{data,error});
   if(error){console.error('Erro ao carregar zonas:',error);return;}
   if(data&&data.length){
     ZONAS=data;
