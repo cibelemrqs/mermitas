@@ -860,11 +860,10 @@ const SUPA_URL='https://tetimspqqcoblbipexuv.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRldGltc3BxcWNvYmxiaXBleHV2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYxOTM4NDQsImV4cCI6MjA5MTc2OTg0NH0.UKJcgtuy_E8dLzwZMVrxJSHNpdHOheUNAWZl8Zhl9_Y';
 const sb=supabase.createClient(SUPA_URL,SUPA_KEY);
 
-/* restaura sessão e zonas ao carregar */
+/* restaura sessão ao carregar */
 sb.auth.getSession().then(({data:{session}})=>{
   if(session) _loadProfile(session.user.id);
 });
-loadZonas();
 
 async function _loadProfile(uid){
   const{data}=await sb.from('clientes').select('*').eq('id',uid).single();
@@ -1630,6 +1629,7 @@ function addCdpItem(cat){
 
 /* init */
 renderCdpGrid('carbo');
+loadZonas();
 </script>
 </body>
 </html>
