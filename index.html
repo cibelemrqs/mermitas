@@ -1549,12 +1549,15 @@ function renderAdminZonas(){
     </div>`).join('');
 }
 async function saveZonaRow(i){
-  ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
-  ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
-  ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
-  await applyZonaChanges();
-  renderAdminZonas();
-  toast('Zona "'+ZONAS[i].nome+'" salva ✓');
+  console.log('saveZonaRow chamado, i=',i,'ZONAS[i]=',ZONAS[i]);
+  try{
+    ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
+    ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
+    ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
+    await applyZonaChanges();
+    renderAdminZonas();
+    toast('Zona "'+ZONAS[i].nome+'" salva ✓');
+  }catch(e){console.error('Erro em saveZonaRow:',e);}
 }
 async function updZona2(i,field,val){
   ZONAS[i][field]=field==='taxa'?+val:val;
