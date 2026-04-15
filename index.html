@@ -817,16 +817,14 @@ function buildZonaMaps(){
 }
 async function saveZonas(){
   const payload=ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1}));
-  console.log('saveZonas payload:',payload);
-  const res=await sb.from('zonas').upsert(payload,{onConflict:'key'});
-  console.log('saveZonas resposta completa:',res);
-  if(res.error) console.error('Erro ao salvar zonas:',res.error);
+  const{error}=await sb.from('zonas').upsert(payload,{onConflict:'key'});
+  if(error){toast('Erro ao salvar zona: '+error.message);return false;}
+  return true;
 }
 async function loadZonas(){
   renderZonaSelect();
   renderZonasPub();
   const{data,error}=await sb.from('zonas').select('*').order('ordem');
-  console.log('loadZonas →',{data,error});
   if(error){console.error('Erro ao carregar zonas:',error);return;}
   if(data&&data.length){
     ZONAS=data;
@@ -837,7 +835,7 @@ async function loadZonas(){
 }
 async function applyZonaChanges(){
   buildZonaMaps();
-  await saveZonas();
+  const ok=await saveZonas();
   renderZonaSelect();
   renderZonasPub();
   if(user&&user.zona){
@@ -845,6 +843,7 @@ async function applyZonaChanges(){
     user.zonaNome=ZONA_N[user.zona]||user.zonaNome;
     refreshSide();
   }
+  return ok;
 }
 function renderZonaSelect(){
   const sel=$('cz');if(!sel)return;
@@ -1549,15 +1548,12 @@ function renderAdminZonas(){
     </div>`).join('');
 }
 async function saveZonaRow(i){
-  console.log('saveZonaRow chamado, i=',i,'ZONAS[i]=',ZONAS[i]);
-  try{
-    ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
-    ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
-    ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
-    await applyZonaChanges();
-    renderAdminZonas();
-    toast('Zona "'+ZONAS[i].nome+'" salva ✓');
-  }catch(e){console.error('Erro em saveZonaRow:',e);}
+  ZONAS[i].nome=($('zn-'+i)?.value||'').trim()||ZONAS[i].nome;
+  ZONAS[i].sub =($('zs-'+i)?.value||'').trim()||ZONAS[i].sub;
+  ZONAS[i].taxa=+($('zt-'+i)?.value??ZONAS[i].taxa);
+  const ok=await applyZonaChanges();
+  renderAdminZonas();
+  if(ok!==false) toast('Zona "'+ZONAS[i].nome+'" salva ✓');
 }
 async function updZona2(i,field,val){
   ZONAS[i][field]=field==='taxa'?+val:val;
