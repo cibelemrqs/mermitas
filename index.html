@@ -816,9 +816,12 @@ function buildZonaMaps(){
   window.ZONA_N=Object.fromEntries(ZONAS.map(z=>[z.key,z.nome]));
 }
 async function saveZonas(){
+  /* apaga tudo e reinserere — mais confiável que upsert com RLS anon */
+  const{error:delErr}=await sb.from('zonas').delete().neq('key','__none__');
+  if(delErr){toast('Erro ao salvar: '+delErr.message);return false;}
   const payload=ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1}));
-  const{error}=await sb.from('zonas').upsert(payload,{onConflict:'key'});
-  if(error){toast('Erro ao salvar zona: '+error.message);return false;}
+  const{error:insErr}=await sb.from('zonas').insert(payload);
+  if(insErr){toast('Erro ao salvar: '+insErr.message);return false;}
   return true;
 }
 async function loadZonas(){
