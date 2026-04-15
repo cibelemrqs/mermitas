@@ -816,8 +816,11 @@ function buildZonaMaps(){
   window.ZONA_N=Object.fromEntries(ZONAS.map(z=>[z.key,z.nome]));
 }
 async function saveZonas(){
-  const{error}=await sb.from('zonas').upsert(ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1})));
-  if(error) console.error('Erro ao salvar zonas:',error);
+  const payload=ZONAS.map((z,i)=>({key:z.key,nome:z.nome,taxa:z.taxa,sub:z.sub,ordem:i+1}));
+  console.log('saveZonas payload:',payload);
+  const res=await sb.from('zonas').upsert(payload,{onConflict:'key'});
+  console.log('saveZonas resposta completa:',res);
+  if(res.error) console.error('Erro ao salvar zonas:',res.error);
 }
 async function loadZonas(){
   renderZonaSelect();
