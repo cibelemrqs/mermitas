@@ -762,9 +762,12 @@ input.price-inp:focus{outline:none;border-color:var(--g700)}
           <div style="font-family:'Lora',serif;font-size:20px;color:#fff">Pedidos</div>
           <div style="font-size:12px;color:rgba(255,255,255,.3);margin-top:2px" id="admin-orders-info">Aguardando pedidos…</div>
         </div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div style="width:8px;height:8px;border-radius:50%;background:#4CAF72;animation:pulse 2s infinite"></div>
-          <span style="font-size:12px;color:rgba(255,255,255,.3)">ao vivo · atualiza a cada 5s</span>
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+          <button id="_sel-mode-btn" onclick="toggleSelMode()" style="background:rgba(76,175,114,.15);border:1px solid rgba(76,175,114,.25);color:#4CAF72;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:7px 16px;border-radius:20px;cursor:pointer;transition:.15s">📋 Ficha de múltiplos pedidos</button>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div style="width:8px;height:8px;border-radius:50%;background:#4CAF72;animation:pulse 2s infinite"></div>
+            <span style="font-size:12px;color:rgba(255,255,255,.3)">ao vivo · atualiza a cada 5s</span>
+          </div>
         </div>
       </div>
       <div id="admin-orders-list"></div>
@@ -1737,6 +1740,186 @@ ${msHtml}
 </body></html>`;
 }
 
+/* ── ficha de produção (cozinha) ── */
+function _kitchenAgg(marmitas,extras){
+  const map={};
+  for(const m of marmitas||[]){
+    for(const p of m.partes||[]){
+      const key=(p.tipo||'outro')+'::'+p.nome;
+      if(!map[key])map[key]={nome:p.nome,tipo:p.tipo||'outro',totalG:0,count:0,hasG:false};
+      map[key].count++;
+      const g=parseFloat(String(p.g||'').replace(/[^\d.]/g,''));
+      if(!isNaN(g)&&g>0){map[key].totalG+=g;map[key].hasG=true;(map[key].porcoes=map[key].porcoes||[]).push(g);}
+    }
+  }
+  for(const e of extras||[]){
+    const key='extra::'+e.nome;
+    if(!map[key])map[key]={nome:e.nome,tipo:'extra',totalG:0,count:0,hasG:false};
+    map[key].count++;
+    const g=parseFloat(String(e.g||'').replace(/[^\d.]/g,''));
+    if(!isNaN(g)&&g>0){map[key].totalG+=g;map[key].hasG=true;(map[key].porcoes=map[key].porcoes||[]).push(g);}
+  }
+  const grp={carbo:{items:[]},prot:{items:[]},leg:{items:[]},especiais:{items:[]},extra:{items:[]}};
+  for(const it of Object.values(map)){
+    if(it.tipo==='carbo')grp.carbo.items.push(it);
+    else if(it.tipo==='prot')grp.prot.items.push(it);
+    else if(it.tipo==='leg')grp.leg.items.push(it);
+    else if(['esp','sopa','assado'].includes(it.tipo))grp.especiais.items.push(it);
+    else grp.extra.items.push(it);
+  }
+  return grp;
+}
+function _kitchenPdfTemplate({logoHtml,nome,dataFmt,numMarmitas,grouped,geradoEm,clientesList,numPedidos}){
+  const isMulti=!!(clientesList&&numPedidos>0);
+  const CATS=[
+    {k:'carbo',    label:'🍚 Carboidratos',        cor:'#2D6A4F'},
+    {k:'prot',     label:'🥩 Proteínas',            cor:'#6B2D2D'},
+    {k:'leg',      label:'🥦 Legumes',              cor:'#2D5A27'},
+    {k:'especiais',label:'⭐ Especiais',             cor:'#4A3728'},
+    {k:'extra',    label:'📦 Itens Personalizados',  cor:'#3A2D5C'},
+  ];
+  const secHtml=CATS.map(cfg=>{
+    const items=(grouped[cfg.k]?.items||[]).sort((a,b)=>a.nome.localeCompare(b.nome,'pt'));
+    if(!items.length)return '';
+    const rows=items.map(it=>{
+      const tot=it.hasG?(Number.isInteger(it.totalG)?it.totalG:+it.totalG.toFixed(1))+'g':'Qtd: '+it.count+' und.';
+      const ps=it.porcoes||[];
+      const iguais=ps.length>1&&ps.every(v=>v===ps[0]);
+      const avg=it.hasG&&it.count>1?(iguais?`<span class="dtl">${it.count}× ${ps[0]}g cada</span>`:`<span class="dtl">${it.count} porções variadas</span>`):(it.hasG&&it.count===1?`<span class="dtl">1 porção</span>`:'');
+      return `<div class="row"><span class="iname">${it.nome}</span>${avg}<span class="iqty">${tot}</span></div>`;
+    }).join('');
+    return `<div class="sec"><div class="sh" style="background:${cfg.cor}">${cfg.label}</div>${rows}</div>`;
+  }).join('');
+  return `<!DOCTYPE html><html lang="pt-BR"><head>
+<meta charset="UTF-8"><title>${isMulti?`Ficha de Produção — ${numPedidos} pedidos`:`Ficha de Produção – ${nome}`}</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important}
+  body{font-family:'Nunito',sans-serif;color:#1C2B22;background:#fff;padding:36px 40px;max-width:700px;margin:0 auto}
+  .np{display:flex;align-items:center;gap:12px;background:#f0faf4;border:1px solid #b2dfcc;border-radius:10px;padding:12px 18px;margin-bottom:24px;font-size:13px;color:#1D5C3A;font-weight:600}
+  .sb{background:#1D5C3A;color:#fff;border:none;font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:8px 20px;border-radius:8px;cursor:pointer}
+  .hd{display:flex;align-items:center;gap:16px;padding-bottom:18px;border-bottom:3px solid #1D5C3A;margin-bottom:24px}
+  .logo{width:60px;height:60px;object-fit:contain;border-radius:10px}
+  .brand h1{font-family:'Lora',serif;font-size:22px;color:#1D5C3A;margin-bottom:2px}
+  .brand p{font-size:11px;color:#6B8070;font-weight:700;text-transform:uppercase;letter-spacing:.1em}
+  .bdg{display:inline-block;background:#1D5C3A;color:#fff;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;letter-spacing:.06em;text-transform:uppercase;margin-left:10px;vertical-align:middle}
+  .ib{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#f5f0e8;border-radius:10px;padding:14px 18px;margin-bottom:22px}
+  .il{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#6B8070;font-weight:700;margin-bottom:3px}
+  .iv{font-size:14px;font-weight:700;color:#1C2B22}
+  .sec{margin-bottom:16px;border-radius:10px;overflow:hidden;border:1px solid #d4ede0}
+  .sh{color:#fff;padding:10px 16px;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+  .row{display:flex;align-items:center;padding:9px 16px;border-bottom:1px solid #edf5ee;gap:8px}
+  .row:last-child{border-bottom:none}
+  .row:nth-child(even){background:#f9fcfa}
+  .iname{flex:1;font-size:14px;font-weight:700;color:#1C2B22}
+  .dtl{font-size:11px;color:#6B8070;white-space:nowrap}
+  .iqty{font-size:15px;font-weight:800;color:#1D5C3A;white-space:nowrap;min-width:100px;text-align:right}
+  .cli-list{background:#f5f0e8;border-radius:10px;padding:14px 18px;margin-bottom:22px}
+  .cli-row{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #e8e2d9;font-size:13px}
+  .cli-row:last-child{border-bottom:none}
+  .cli-row span:first-child{font-weight:700;color:#1C2B22}
+  .cli-row span:last-child{color:#6B8070}
+  .footer{margin-top:28px;font-size:11px;color:#9aafa4;text-align:center;border-top:1px solid #e8e2d9;padding-top:14px}
+  @media print{.np{display:none!important}body{padding:15px}@page{margin:12mm;size:A4}}
+</style></head><body>
+<div class="np"><span>🍳 <strong>Ficha de Produção</strong> — imprima ou salve como PDF</span><button class="sb" onclick="window.print()">⬇ Imprimir / PDF</button></div>
+<div class="hd">${logoHtml}<div class="brand"><h1>Ficha de Produção <span class="bdg">${isMulti?numPedidos+' pedidos':'Cozinha'}</span></h1><p>Mermita's · Marmita Fitness Caseira</p></div></div>
+${isMulti?`<div class="ib" style="grid-template-columns:1fr 1fr"><div><div class="il">Pedidos incluídos</div><div class="iv">${numPedidos}</div></div><div><div class="il">Total de marmitas</div><div class="iv">${numMarmitas} marmita${numMarmitas!==1?'s':''}</div></div></div><div class="cli-list"><div style="font-size:9px;text-transform:uppercase;font-weight:700;letter-spacing:.07em;color:#6B8070;margin-bottom:10px">Clientes / pedidos</div>${(clientesList||[]).map(c=>`<div class="cli-row"><span>${c.nome}</span><span>${c.dt} · ${c.nm} marmita${c.nm!==1?'s':''}</span></div>`).join('')}</div>`:`<div class="ib"><div><div class="il">Cliente</div><div class="iv">${nome}</div></div><div><div class="il">Data do pedido</div><div class="iv">${dataFmt}</div></div><div><div class="il">Total de marmitas</div><div class="iv">${numMarmitas} marmita${numMarmitas!==1?'s':''}</div></div></div>`}
+${secHtml}
+<div class="footer">Mermita's — Ficha de Produção · gerado em ${geradoEm}</div>
+</body></html>`;
+}
+async function gerarFichaCozinha(o){
+  toast('Gerando ficha de produção…');
+  const logoB64=await _imgBase64('/marmitalogo.png');
+  const logoHtml=logoB64?`<img class="logo" src="${logoB64}" alt="Logo">`:'';
+  const marmitas=o.marmitas||[];
+  const extras=o.extras||[];
+  const grouped=_kitchenAgg(marmitas,extras);
+  const nome=o.client?.nome||o.nome||o.client_nome||'—';
+  const dt=new Date(o.timestamp||o.created_at||Date.now());
+  const dataFmt=dt.toLocaleDateString('pt-BR');
+  const numMarmitas=marmitas.length;
+  const geradoEm=new Date().toLocaleString('pt-BR');
+  const w=window.open('','_blank','width=820,height=960');
+  w.document.write(_kitchenPdfTemplate({logoHtml,nome,dataFmt,numMarmitas,grouped,geradoEm}));
+  w.document.close();
+}
+function _gerarFichaCli(ci,pi){
+  const c=_cliData[ci],p=c?.pedidos[pi];if(!p)return;
+  gerarFichaCozinha({marmitas:p.marmitas||[],extras:p.extras||[],nome:c.nome,created_at:p.created_at});
+}
+
+/* ── seleção de múltiplos pedidos ── */
+function toggleSelMode(){
+  _selMode=!_selMode;
+  _selSet.clear();
+  const btn=document.getElementById('_sel-mode-btn');
+  if(btn){
+    btn.textContent=_selMode?'✕ Cancelar seleção':'📋 Ficha de múltiplos pedidos';
+    btn.style.background=_selMode?'rgba(231,76,60,.2)':'rgba(76,175,114,.15)';
+    btn.style.borderColor=_selMode?'rgba(231,76,60,.3)':'rgba(76,175,114,.25)';
+    btn.style.color=_selMode?'#E74C3C':'#4CAF72';
+  }
+  if(_selMode){
+    const bar=document.createElement('div');
+    bar.id='_sel-bar';
+    bar.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:500;background:#111E16;border-top:1px solid rgba(76,175,114,.2);padding:14px 28px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 24px rgba(0,0,0,.5)';
+    document.body.appendChild(bar);
+  } else {
+    document.getElementById('_sel-bar')?.remove();
+  }
+  _updateSelBar();
+  renderAdminOrders();
+}
+function _updateSelBar(){
+  const bar=document.getElementById('_sel-bar');if(!bar)return;
+  const n=_selSet.size;
+  const totalM=adminOrders.filter(o=>_selSet.has(o.id)).reduce((a,o)=>a+(o.marmitas||[]).length,0);
+  bar.innerHTML=`
+    <button onclick="selAll()" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer">Selecionar todos</button>
+    <button onclick="selNone()" style="background:transparent;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer">Limpar</button>
+    <span style="flex:1;font-size:13px;color:rgba(255,255,255,.45)">${n===0?'Clique nos pedidos para selecionar':`<strong style="color:#fff">${n}</strong> pedido${n!==1?'s':''} · <strong style="color:#4CAF72">${totalM}</strong> marmita${totalM!==1?'s':''}`}</span>
+    ${n>0?`<button onclick="gerarFichaMulti()" style="background:#1D5C3A;border:none;color:#fff;font-family:'Nunito',sans-serif;font-size:13px;font-weight:800;padding:10px 24px;border-radius:20px;cursor:pointer;box-shadow:0 4px 16px rgba(29,92,58,.5)">📋 Gerar ficha (${n} pedido${n!==1?'s':''})</button>`:''}
+    <button onclick="toggleSelMode()" style="background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(255,255,255,.3);font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:6px 14px;border-radius:20px;cursor:pointer">Cancelar</button>`;
+}
+function selAll(){adminOrders.forEach(o=>_selSet.add(o.id));_updateSelBar();_refreshSelCards();}
+function selNone(){_selSet.clear();_updateSelBar();_refreshSelCards();}
+function toggleSelOrder(id){
+  if(_selSet.has(id))_selSet.delete(id);else _selSet.add(id);
+  _updateSelBar();
+  const card=document.getElementById('oc-'+id);
+  if(card)_applySelStyle(card,_selSet.has(id));
+}
+function _applySelStyle(card,sel){
+  card.style.outline=sel?'2px solid rgba(76,175,114,.7)':'';
+  card.style.background=sel?'rgba(76,175,114,.05)':'';
+  const chk=card.querySelector('.sel-chk');
+  if(chk){
+    chk.style.background=sel?'#4CAF72':'transparent';
+    chk.style.borderColor=sel?'#4CAF72':'rgba(255,255,255,.2)';
+    chk.style.color=sel?'#fff':'transparent';
+    chk.textContent=sel?'✓':'';
+  }
+}
+function _refreshSelCards(){
+  adminOrders.forEach(o=>{const c=document.getElementById('oc-'+o.id);if(c)_applySelStyle(c,_selSet.has(o.id));});
+}
+async function gerarFichaMulti(){
+  if(!_selSet.size){toast('Selecione ao menos um pedido');return}
+  const sel=adminOrders.filter(o=>_selSet.has(o.id));
+  toast('Gerando ficha de produção…');
+  const logoB64=await _imgBase64('/marmitalogo.png');
+  const logoHtml=logoB64?`<img class="logo" src="${logoB64}" alt="Logo">`:'';
+  const allMarmitas=sel.flatMap(o=>o.marmitas||[]);
+  const allExtras=sel.flatMap(o=>o.extras||[]);
+  const grouped=_kitchenAgg(allMarmitas,allExtras);
+  const clientesList=sel.map(o=>({nome:o.client?.nome||'—',dt:new Date(o.timestamp).toLocaleDateString('pt-BR'),nm:(o.marmitas||[]).length}));
+  const w=window.open('','_blank','width=820,height=960');
+  w.document.write(_kitchenPdfTemplate({logoHtml,nome:'',dataFmt:'',numMarmitas:allMarmitas.length,grouped,geradoEm:new Date().toLocaleString('pt-BR'),clientesList,numPedidos:sel.length}));
+  w.document.close();
+}
+
 /* ── edição de perfil do cliente ── */
 function perfilToggleEdit(){
   const view=$('pp-view'),edit=$('pp-edit');
@@ -1793,6 +1976,8 @@ let adminLogado = false;
 let adminOrders = [];
 let adminInterval = null;
 let expandedOrders = new Set();
+let _selMode = false;
+let _selSet = new Set();
 
 /* entry: ?admin na URL */
 if(new URLSearchParams(location.search).get('admin')!==null) showScreen('admin-login');
@@ -1818,7 +2003,31 @@ function doAdminLogout(){
   adminLogado=false;stopAdminRealtime();showScreen('home');
 }
 
-function showAdminTab(tab){
+function _aOrcConfirmLeave(n){
+  return new Promise(resolve=>{
+    const ov=document.createElement('div');
+    ov.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9998;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+    ov.innerHTML=`
+      <div style="background:#1A2820;border:1px solid rgba(76,175,114,.2);border-radius:20px;padding:32px 28px;max-width:400px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.6);text-align:center;animation:fadeUp .18s ease both">
+        <div style="width:54px;height:54px;background:rgba(255,193,7,.12);border:1.5px solid rgba(255,193,7,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:24px">⚠</div>
+        <div style="font-size:18px;font-weight:800;color:#fff;margin-bottom:10px">Orçamento não salvo</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.5);line-height:1.7;margin-bottom:28px">Você tem <strong style="color:rgba(255,255,255,.85)">${n} marmita${n!==1?'s':''}</strong> no orçamento atual<br>que ainda não foi salvo como pedido.</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <button id="_aoc-stay" style="background:rgba(76,175,114,.15);border:1.5px solid rgba(76,175,114,.4);color:#4CAF72;font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;padding:12px 24px;border-radius:40px;cursor:pointer;transition:.15s" onmouseover="this.style.background='rgba(76,175,114,.25)'" onmouseout="this.style.background='rgba(76,175,114,.15)'">← Continuar editando</button>
+          <button id="_aoc-leave" style="background:transparent;border:1.5px solid rgba(255,255,255,.1);color:rgba(255,255,255,.4);font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;padding:10px 24px;border-radius:40px;cursor:pointer;transition:.15s" onmouseover="this.style.color='rgba(231,76,60,.8)';this.style.borderColor='rgba(231,76,60,.3)'" onmouseout="this.style.color='rgba(255,255,255,.4)';this.style.borderColor='rgba(255,255,255,.1)'">Sair sem salvar</button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
+    const rm=r=>{document.body.removeChild(ov);resolve(r)};
+    ov.querySelector('#_aoc-stay').onclick=()=>rm(false);
+    ov.querySelector('#_aoc-leave').onclick=()=>rm(true);
+    ov.addEventListener('click',e=>{if(e.target===ov)rm(false)});
+  });
+}
+async function showAdminTab(tab){
+  if(tab!=='orcamento'&&aOrcMarmitas.length&&!_aOrcOrdemSalva){
+    if(!await _aOrcConfirmLeave(aOrcMarmitas.length))return;
+  }
   ['pedidos','cupons','cardapio','zonas','orcamento','clientes'].forEach(t=>{
     $('admin-section-'+t)?.classList.toggle('active',t===tab);
     $('atab-'+t)?.classList.toggle('active',t===tab);
@@ -1876,7 +2085,7 @@ function renderAdminOrders(){
   }
   const novos=adminOrders.filter(o=>o.status==='novo').length;
   if(info)info.textContent=`${adminOrders.length} pedido${adminOrders.length>1?'s':''} · ${novos} novo${novos!==1?'s':''}`;
-  el.innerHTML=adminOrders.map(o=>renderOrderCard(o)).join('');
+  el.innerHTML=adminOrders.map(o=>renderOrderCard(o)).join('')+(_selMode?'<div style="height:72px"></div>':'');
 }
 
 function renderOrderCard(o){
@@ -1914,23 +2123,26 @@ function renderOrderCard(o){
       </div>
     </div>`;
 
-  return `<div class="oc ${o.status==='novo'?'novo':''}" id="oc-${o.id}">
-    <div class="oc-head">
-      <div>
+  const selChk=_selMode?`<div class="sel-chk" onclick="event.stopPropagation();toggleSelOrder('${o.id}')" style="width:24px;height:24px;border-radius:7px;border:2px solid ${_selSet.has(o.id)?'#4CAF72':'rgba(255,255,255,.2)'};background:${_selSet.has(o.id)?'#4CAF72':'transparent'};display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:13px;flex-shrink:0;cursor:pointer;margin-right:4px;transition:.15s">${_selSet.has(o.id)?'✓':''}</div>`:''
+  return `<div class="oc ${o.status==='novo'?'novo':''}" id="oc-${o.id}"${_selMode?` onclick="toggleSelOrder('${o.id}')" style="cursor:pointer${_selSet.has(o.id)?';outline:2px solid rgba(76,175,114,.7);background:rgba(76,175,114,.05)':''}"`:''}>
+    <div class="oc-head" style="display:flex;align-items:flex-start;gap:0">
+      ${selChk}
+      <div style="flex:1">
         <div class="oc-id">#${o.id.slice(-6).toUpperCase()} · ${dia} ${hora}${o._local?' <span style="font-size:9px;background:rgba(255,200,0,.2);color:#f0c040;padding:1px 6px;border-radius:4px;margin-left:4px">LOCAL</span>':''}</div>
         <div class="oc-nome">${o.client.nome}</div>
         <div class="oc-info">📱 ${o.client.tel}<br>📍 ${o.client.zonaNome||'—'} · Taxa: ${fR(o.client.taxa||0)}<br>📬 ${o.client.endereco||'—'}</div>
       </div>
       <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;flex-shrink:0">
-        <button class="oc-status ${ST_CLS[o.status]}" onclick="cycleStatus('${o.id}')" title="Clique para avançar status">${ST_LABEL[o.status]}</button>
+        <button class="oc-status ${ST_CLS[o.status]}" onclick="event.stopPropagation();cycleStatus('${o.id}')" title="Clique para avançar status">${ST_LABEL[o.status]}</button>
         <div class="oc-total">${fR(grandTotal)}</div>
       </div>
     </div>
     ${exp?`<div class="oc-items">${itemsHtml}${extrasHtml}</div>${subtotaisHtml}`:''}
-    <div class="oc-acts">
+    <div class="oc-acts" onclick="event.stopPropagation()">
       <button class="abtn abtn-ghost" onclick="toggleOrder('${o.id}')">${exp?'Fechar ▲':'Ver detalhes ▼'}</button>
       ${exp?`
         <button class="abtn abtn-green" onclick="toggleExtraForm('${o.id}')">+ Adicionar item</button>
+        <button class="abtn abtn-ghost" onclick="gerarFichaCozinha(adminOrders.find(x=>x.id==='${o.id}'))">📋 Ficha de cozinha</button>
         <button class="abtn abtn-wpp" onclick="sendAdminWpp('${o.id}')">WhatsApp</button>
         <button class="abtn abtn-red" onclick="deleteOrder('${o.id}')">Excluir</button>
       `:''}
@@ -2116,9 +2328,10 @@ function addCdpItem(cat){
 /* ═══════════════════════════════════════════
    ADMIN — NOVO ORÇAMENTO
 ═══════════════════════════════════════════ */
-let aOrcMarmitas=[],aOrcEditIdx=-1,_aOrcSnap={};
-let aOrcCur={carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null};
+let aOrcMarmitas=[],aOrcEditIdx=-1,_aOrcSnap={},_aOrcOrdemSalva=false;
+let aOrcCur={carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]};
 let aOrcExtras=[];
+let aOrcCustomFormOpen={carbo:false,prot:false,leg:false};
 
 function aOrcIsSel(id,slot){
   if(slot==='carbo')return aOrcCur.carbo.some(x=>x.id===id);
@@ -2150,13 +2363,13 @@ function aOrcSelItem(id,slot){
     if(i>=0)aOrcCur.leg.splice(i,1);else aOrcCur.leg.push({id,g:ALL[id].base});
   } else if(slot==='esp'){
     if(aOrcCur.esp?.id===id)aOrcCur.esp=null;
-    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.sopa=null;aOrcCur.assado=null;aOrcCur.esp={id,g:ALL[id].base};}
+    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.carboCustom=[];aOrcCur.protCustom=[];aOrcCur.sopa=null;aOrcCur.assado=null;aOrcCur.esp={id,g:ALL[id].base};}
   } else if(slot==='sopa'){
     if(aOrcCur.sopa?.id===id)aOrcCur.sopa=null;
-    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.esp=null;aOrcCur.assado=null;aOrcCur.sopa={id};}
+    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.carboCustom=[];aOrcCur.protCustom=[];aOrcCur.esp=null;aOrcCur.assado=null;aOrcCur.sopa={id};}
   } else if(slot==='assado'){
     if(aOrcCur.assado?.id===id)aOrcCur.assado=null;
-    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.esp=null;aOrcCur.sopa=null;aOrcCur.assado={id};}
+    else{aOrcCur.carbo=[];aOrcCur.prot=[];aOrcCur.carboCustom=[];aOrcCur.protCustom=[];aOrcCur.esp=null;aOrcCur.sopa=null;aOrcCur.assado={id};}
   }
   aOrcRenderBuilder();aOrcUpdatePrev();
 }
@@ -2171,21 +2384,64 @@ function aOrcSetG(id,slot,v,e){
   if(pe&&it&&!it.fixo)pe.textContent=fR(rH(it.pg*g));
   aOrcUpdatePrev();
 }
+function aOrcToggleCustomForm(slot){
+  aOrcCustomFormOpen[slot]=!aOrcCustomFormOpen[slot];
+  aOrcRenderBuilder();aOrcUpdatePrev();
+}
+function aOrcAddCustomItem(slot){
+  const nome=($('aorc-cn-'+slot)?.value||'').trim();
+  if(!nome){toast('Informe o nome do item');return}
+  const g=Math.max(1,+($('aorc-cg-'+slot)?.value||1));
+  const preco=+($('aorc-cf-'+slot)?.value||0);
+  if(!aOrcCur[slot+'Custom'])aOrcCur[slot+'Custom']=[];
+  aOrcCur[slot+'Custom'].push({nome,g,preco});
+  aOrcCustomFormOpen[slot]=false;
+  aOrcRenderBuilder();aOrcUpdatePrev();
+  toast('"'+nome+'" adicionado ✓');
+}
+function aOrcDelCustomItem(slot,idx){
+  (aOrcCur[slot+'Custom']||[]).splice(idx,1);
+  aOrcRenderBuilder();aOrcUpdatePrev();
+}
+function aOrcSetCustomG(slot,idx,v,e){
+  if(e)e.stopPropagation();
+  const g=Math.max(1,+v||1);
+  const items=aOrcCur[slot+'Custom']||[];
+  if(items[idx])items[idx].g=g;
+  aOrcUpdatePrev();
+}
+function aOrcSetCustomP(slot,idx,v,e){
+  if(e)e.stopPropagation();
+  const preco=Math.max(0,+v||0);
+  const items=aOrcCur[slot+'Custom']||[];
+  if(items[idx]){
+    items[idx].preco=preco;
+    const el=$('aorc-cpc-'+slot+'-'+idx);
+    if(el)el.textContent=fR(preco);
+  }
+  aOrcUpdatePrev();
+}
 function aOrcGetParts(){
   const p=[];
   if(aOrcCur.esp){
     const it=ALL[aOrcCur.esp.id];p.push({id:aOrcCur.esp.id,nome:it.nome,g:aOrcCur.esp.g,preco:rH(it.pg*aOrcCur.esp.g),tipo:'esp'});
     aOrcCur.leg.forEach(l=>{const it=ALL[l.id];p.push({id:l.id,nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+    (aOrcCur.legCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'leg'})});
   } else if(aOrcCur.sopa){
     const it=ALL[aOrcCur.sopa.id];p.push({id:aOrcCur.sopa.id,nome:it.nome,g:it.base,preco:it.preco,tipo:'sopa'});
     aOrcCur.leg.forEach(l=>{const it=ALL[l.id];p.push({id:l.id,nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+    (aOrcCur.legCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'leg'})});
   } else if(aOrcCur.assado){
     const it=ALL[aOrcCur.assado.id];p.push({id:aOrcCur.assado.id,nome:it.nome,g:it.base,preco:it.preco,tipo:'assado'});
     aOrcCur.leg.forEach(l=>{const it=ALL[l.id];p.push({id:l.id,nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+    (aOrcCur.legCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'leg'})});
   } else {
     aOrcCur.carbo.forEach(c=>{const it=ALL[c.id];p.push({id:c.id,nome:it.nome,g:c.g,preco:rH(it.pg*c.g),tipo:'carbo'})});
+    (aOrcCur.carboCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'carbo'})});
     aOrcCur.prot.forEach(c=>{const it=ALL[c.id];p.push({id:c.id,nome:it.nome,g:c.g,preco:rH(it.pg*c.g),tipo:'prot'})});
+    (aOrcCur.protCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'prot'})});
     aOrcCur.leg.forEach(l=>{const it=ALL[l.id];p.push({id:l.id,nome:it.nome,g:l.g,preco:rH(it.pg*l.g),tipo:'leg'})});
+    (aOrcCur.legCustom||[]).forEach(c=>{p.push({nome:c.nome,g:c.g,preco:c.preco,tipo:'leg'})});
   }
   return p;
 }
@@ -2212,8 +2468,10 @@ function aOrcSaveM(){
     aOrcMarmitas.push({partes:parts,preco,obs,curState:snap});
     toast('Marmita #'+aOrcMarmitas.length+' salva ✓');
   }
-  Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});
+  Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});
+  Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});
   aOrcRenderBuilder();aOrcUpdatePrev();aOrcRenderChips();aOrcRefreshTotal();
+  setTimeout(()=>$('aorc-chips')?.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
 }
 function aOrcDelM(i){if(aOrcEditIdx===i)aOrcEditIdx=-1;aOrcMarmitas.splice(i,1);aOrcRenderChips();aOrcRefreshTotal();}
 function aOrcDupM(i){
@@ -2224,8 +2482,11 @@ function aOrcEditM(i){
   const m=aOrcMarmitas[i];
   if(m.curState){
     Object.assign(aOrcCur,JSON.parse(JSON.stringify(m.curState)));
+    aOrcCur.carboCustom=aOrcCur.carboCustom||[];
+    aOrcCur.protCustom=aOrcCur.protCustom||[];
+    aOrcCur.legCustom=aOrcCur.legCustom||[];
   } else {
-    Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});
+    Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});
     (m.partes||[]).forEach(p=>{
       if(!p.id)return;
       if(p.tipo==='carbo') aOrcCur.carbo.push({id:p.id,g:p.g});
@@ -2244,17 +2505,36 @@ function aOrcEditM(i){
 }
 function aOrcRenderChips(){
   const el=$('aorc-chips');if(!el)return;
-  if(!aOrcMarmitas.length){el.innerHTML='<div class="chip-empty">Nenhuma marmita salva</div>';return}
+  if(!aOrcMarmitas.length){el.innerHTML='<div class="chip-empty" style="color:rgba(255,255,255,.3)">Nenhuma marmita salva</div>';return}
+  const isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
+  let mNum=0;
   el.innerHTML=aOrcMarmitas.map((m,i)=>{
-    const lb=m.partes.map(p=>p.nome).join(' + ');
-    const sh=lb.length>46?lb.slice(0,44)+'…':lb;
     const editing=aOrcEditIdx===i;
-    return `<div class="chip${editing?' sel':''}">
-      <span class="chip-n">#${i+1}</span>
-      <span style="flex:1"><div class="chip-name">${sh}</div><div class="chip-price">${fR(m.preco)}</div>${m.obs?`<div style="font-size:11px;color:var(--g700);margin-top:2px"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}</span>
-      <button class="chip-act" onclick="event.stopPropagation();aOrcEditM(${i})">✎ Editar</button>
-      <button class="chip-act" onclick="event.stopPropagation();aOrcDupM(${i})">⧉ Dup</button>
-      <button class="chip-del" onclick="event.stopPropagation();aOrcDelM(${i})">✕</button>
+    const extra=isExtraM(m);
+    if(!extra)mNum++;
+    const label=extra?'Item personalizado':`Marmita #${mNum}`;
+    const border=editing?'rgba(76,175,114,.6)':'rgba(76,175,114,.15)';
+    const shadow=editing?';box-shadow:0 0 0 2px rgba(76,175,114,.25)':'';
+    const partesHtml=m.partes.map(p=>`
+      <div style="display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.05)">
+        <span style="font-size:13px;color:rgba(255,255,255,.85)">${p.nome}${p.g?` <span style="font-size:11px;color:rgba(255,255,255,.38)">(${p.g}g)</span>`:''}</span>
+        <span style="font-size:12px;font-weight:700;color:#4CAF72;white-space:nowrap;margin-left:12px">${fR(p.preco)}</span>
+      </div>`).join('');
+    return `<div style="background:rgba(0,0,0,.25);border:1px solid ${border};border-radius:10px;padding:12px 14px;margin-bottom:8px${shadow}">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:10px;font-weight:800;color:#4CAF72;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">${label}</span>
+          <span style="font-size:15px;font-weight:800;color:#fff">${fR(m.preco)}</span>
+          ${editing?'<span style="font-size:10px;font-weight:700;color:#FFC107;background:rgba(255,193,7,.12);padding:2px 8px;border-radius:10px">✏ Editando</span>':''}
+        </div>
+        <div style="display:flex;gap:5px;flex-shrink:0">
+          <button onclick="event.stopPropagation();aOrcEditM(${i})" style="background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.65);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer">✎ Editar</button>
+          <button onclick="event.stopPropagation();aOrcDupM(${i})" style="background:rgba(255,255,255,.08);border:none;color:rgba(255,255,255,.65);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer">⧉ Dup</button>
+          <button onclick="event.stopPropagation();aOrcDelM(${i})" style="background:rgba(192,57,43,.15);border:none;color:#E74C3C;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:4px 10px;border-radius:6px;cursor:pointer">✕</button>
+        </div>
+      </div>
+      ${partesHtml}
+      ${m.obs?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;color:rgba(255,255,255,.45)"><span style="font-weight:700;color:rgba(255,255,255,.6)">Obs:</span> ${m.obs}</div>`:''}
     </div>`;
   }).join('');
 }
@@ -2264,10 +2544,12 @@ function aOrcAddExtra(){
   const g=($('aorc-ext-g')?.value||'').trim();
   const preco=+(($('aorc-ext-preco')?.value)||0)||0;
   const desc=($('aorc-ext-desc')?.value||'').trim();
-  aOrcExtras.push({nome,g,preco,desc});
+  aOrcMarmitas.push({partes:[{nome,g:g||'',preco,tipo:'extra',desc}],preco,obs:desc||'',curState:null});
   ['aorc-ext-nome','aorc-ext-g','aorc-ext-preco','aorc-ext-desc'].forEach(id=>{const el=$(id);if(el)el.value='';});
-  aOrcRenderExtras();aOrcRefreshTotal();
-  toast('"'+nome+'" adicionado ao pedido ✓');
+  const f=$('aorc-extra-form');if(f)f.style.display='none';
+  aOrcRenderChips();aOrcRefreshTotal();
+  toast('Marmita adicionada ✓');
+  setTimeout(()=>$('aorc-chips')?.scrollIntoView({behavior:'smooth',block:'nearest'}),120);
 }
 function aOrcDelExtra(i){
   aOrcExtras.splice(i,1);
@@ -2302,7 +2584,7 @@ function aOrcRefreshTotal(){
 function aOrcRenderCat(cat,slot){
   const dimFixed=(slot==='esp'||slot==='sopa'||slot==='assado')&&(aOrcCur.carbo.length||aOrcCur.prot.length||aOrcCur.leg.length);
   const dimBase=(slot==='carbo'||slot==='prot')&&(aOrcCur.esp||aOrcCur.sopa||aOrcCur.assado);
-  return (CDP[cat]||[]).map(it=>{
+  let html=(CDP[cat]||[]).map(it=>{
     const sel=aOrcIsSel(it.id,slot),g=aOrcGetG(it.id,slot),fx=!!it.fixo;
     const cp=fx?it.preco:rH(it.pg*g);
     const dim=!sel&&(dimFixed||dimBase);
@@ -2317,6 +2599,39 @@ function aOrcRenderCat(cat,slot){
       </div>`:''}
     </div>`;
   }).join('');
+  if(slot==='carbo'||slot==='prot'||slot==='leg'){
+    const customs=aOrcCur[slot+'Custom']||[];
+    const dimCustom=slot!=='leg'&&!!(aOrcCur.esp||aOrcCur.sopa||aOrcCur.assado);
+    const defaults={carbo:{g:120,preco:4},prot:{g:100,preco:8},leg:{g:80,preco:3.5}};
+    const d=defaults[slot];
+    html+=customs.map((it,idx)=>`
+      <div class="item sel">
+        <div class="iname">${it.nome}</div>
+        <div class="idesc" style="font-style:italic;font-size:11px;opacity:.65">personalizado</div>
+        <div class="ibase-price">${fR(it.preco)}</div>
+        <div class="ictl" style="display:block" onclick="event.stopPropagation()">
+          <div class="ctl-row"><span class="ctl-lbl">Gramas</span><input class="ctl-inp" type="number" value="${it.g}" min="1" step="10" oninput="aOrcSetCustomG('${slot}',${idx},+this.value,event)"></div>
+          <div class="ctl-row"><span class="ctl-lbl">Preço R$</span><input class="ctl-inp" type="number" value="${it.preco}" step="0.5" min="0" oninput="aOrcSetCustomP('${slot}',${idx},+this.value,event)"></div>
+          <div class="icalc" id="aorc-cpc-${slot}-${idx}">${fR(it.preco)}</div>
+          <button class="idesel" onclick="aOrcDelCustomItem('${slot}',${idx})">remover ✕</button>
+        </div>
+      </div>`).join('');
+    const formOpen=aOrcCustomFormOpen[slot];
+    html+=`<div class="item${dimCustom?' dimmed':''}" style="border-style:dashed" onclick="${dimCustom?'':'aOrcToggleCustomForm(\''+slot+'\')'}">
+      <div class="iname" style="color:var(--g600)">+ Personalizado</div>
+      <div class="idesc" style="font-size:11px;opacity:.7">item fora do cardápio</div>
+      <div class="ibase">${d.g}g base</div>
+      <div class="ibase-price">${fR(d.preco)}</div>
+      ${formOpen?`<div style="display:block;margin-top:10px;padding-top:10px;border-top:1px solid rgba(29,92,58,.12)" onclick="event.stopPropagation()">
+        <div class="ctl-row"><span class="ctl-lbl">Nome</span><input class="ctl-inp" id="aorc-cn-${slot}" type="text" placeholder="Ex: Beterraba cozida" style="font-size:12px"></div>
+        <div class="ctl-row"><span class="ctl-lbl">Gramas</span><input class="ctl-inp" id="aorc-cg-${slot}" type="number" value="${d.g}" min="1" step="10"></div>
+        <div class="ctl-row"><span class="ctl-lbl">Preço R$</span><input class="ctl-inp" id="aorc-cf-${slot}" type="number" value="${d.preco}" step="0.5" min="0"></div>
+        <button class="idesel" style="background:var(--g500);color:#fff;border-color:var(--g500);margin-bottom:4px" onclick="aOrcAddCustomItem('${slot}')">+ adicionar</button>
+        <button class="idesel" onclick="aOrcToggleCustomForm('${slot}')">cancelar</button>
+      </div>`:''}
+    </div>`;
+  }
+  return html;
 }
 function aOrcRenderBuilder(){
   const el=$('aorc-builder');if(!el)return;
@@ -2324,7 +2639,7 @@ function aOrcRenderBuilder(){
     <div class="bb">
       <div class="bb-head">
         <div><div class="bb-num" id="aorc-bb-num">Marmita #${aOrcMarmitas.length+1}</div><div class="bb-sub">Selecione carbo, proteína e legume</div></div>
-        <button class="btn" style="background:var(--creme);color:var(--txt2);padding:7px 14px;font-size:12px" onclick="Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});aOrcEditIdx=-1;const ao=$('aorc-obs');if(ao)ao.value='';aOrcRenderBuilder();aOrcUpdatePrev();aOrcRenderChips()">Limpar</button>
+        <button class="btn" style="background:var(--creme);color:var(--txt2);padding:7px 14px;font-size:12px" onclick="Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});aOrcEditIdx=-1;const ao=$('aorc-obs');if(ao)ao.value='';aOrcRenderBuilder();aOrcUpdatePrev();aOrcRenderChips()">Limpar</button>
       </div>
       <div class="bprev" id="aorc-prev" style="display:none">
         <div class="bprev-title" style="color:var(--g700);font-size:12px">🍱 Resumo — <span id="aorc-prev-num">Marmita ${aOrcMarmitas.length+1}</span></div>
@@ -2367,15 +2682,15 @@ function aOrcRenderBuilder(){
         </div>
         <div id="aorc-extras-list"></div>
       </div>
-      <div class="bb-actions">
-        <button class="btn btn-outline" style="font-size:13px" onclick="$('aorc-prev').scrollIntoView({behavior:'smooth',block:'center'})">↑ Ver resumo</button>
-        <button class="btn btn-p" style="font-size:13px" onclick="aOrcSaveM()">Salvar marmita ✓</button>
+      <div style="position:sticky;bottom:16px;z-index:50;display:flex;gap:10px;justify-content:flex-end;padding-top:16px;margin-top:8px">
+        <button class="btn btn-outline" style="font-size:13px;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.13)" onclick="aOrcGoRes()">↑ Ver resumo</button>
+        <button class="btn btn-p" style="font-size:14px;padding:13px 28px;box-shadow:0 4px 20px rgba(29,92,58,.4)" onclick="aOrcSaveM()">Salvar marmita ✓</button>
       </div>
     </div>`;
 }
 function renderAdminOrc(){
   const sec=$('admin-section-orcamento');if(!sec)return;
-  aOrcMarmitas=[];aOrcExtras=[];Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null});
+  aOrcMarmitas=[];aOrcExtras=[];_aOrcOrdemSalva=false;Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});
   const zonaOpts=ZONAS.map(z=>`<option value="${z.key}">${z.nome} — ${z.taxa===0?'Grátis':'R$ '+z.taxa}</option>`).join('');
   const hoje=new Date().toISOString().slice(0,10);
   sec.innerHTML=`
@@ -2400,7 +2715,7 @@ function renderAdminOrc(){
       </div>
       <div style="background:#1A2820;border:1px solid rgba(76,175,114,.2);border-radius:12px;padding:16px 20px;margin-bottom:20px">
         <div style="font-size:11px;font-weight:800;color:#4CAF72;text-transform:uppercase;letter-spacing:.07em;margin-bottom:10px">Marmitas do pedido</div>
-        <div id="aorc-chips" class="chips" style="margin-bottom:8px"><div class="chip-empty">Nenhuma marmita salva</div></div>
+        <div id="aorc-chips" style="margin-bottom:8px;display:flex;flex-direction:column;gap:0;min-height:20px"><div class="chip-empty" style="color:rgba(255,255,255,.3)">Nenhuma marmita salva</div></div>
         <div id="aorc-total-line" style="font-size:13px;color:rgba(255,255,255,.45)">0 marmitas · Total: R$ 0,00</div>
       </div>
       <div style="background:var(--creme);border-radius:12px;padding:20px">
@@ -2425,24 +2740,28 @@ function aOrcGoRes(){
   const zonaNome=zona?.nome||'—';const taxa=zona?.taxa||0;
   const endereco=($('aorc-end')?.value||'').trim()||'A informar';
   const dataFmt=data?new Date(data+'T12:00:00').toLocaleDateString('pt-BR'):new Date().toLocaleDateString('pt-BR');
+  const _isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
+  const _toExtra=m=>({nome:m.partes[0].nome,g:m.partes[0].g||'',preco:m.preco,desc:m.obs||''});
+  const regularMs=aOrcMarmitas.filter(m=>!_isExtraM(m));
+  const allExtras=[...aOrcMarmitas.filter(_isExtraM).map(_toExtra),...aOrcExtras];
   const mSub=aOrcMarmitas.reduce((a,m)=>a+m.preco,0);
   const eSub=aOrcExtras.reduce((a,e)=>a+e.preco,0);
   const sub=mSub+eSub;
   const total=sub+taxa;
   // cache para uso em aOrcSalvar e aOrcBaixarPDF sem depender do DOM oculto
-  _aOrcSnap={nome,tel,data,dataFmt,zonaKey,zonaNome,taxa,endereco,sub,total,marmitas:JSON.parse(JSON.stringify(aOrcMarmitas)),extras:JSON.parse(JSON.stringify(aOrcExtras))};
+  _aOrcSnap={nome,tel,data,dataFmt,zonaKey,zonaNome,taxa,endereco,sub,total,marmitas:JSON.parse(JSON.stringify(regularMs)),extras:JSON.parse(JSON.stringify(allExtras))};
   const clientHtml=`
     <div><div class="rcl">Cliente</div><div class="rcv">${nome}</div></div>
     <div><div class="rcl">WhatsApp</div><div class="rcv">${tel}</div></div>
     <div><div class="rcl">Data</div><div class="rcv">${dataFmt}</div></div>
     <div><div class="rcl">Região</div><div class="rcv">${zonaNome}</div></div>
     <div style="grid-column:1/-1"><div class="rcl">Endereço de entrega</div><div class="rcv">${endereco}</div></div>`;
-  const msHtml=aOrcMarmitas.map((m,i)=>`
+  const msHtml=regularMs.map((m,i)=>`
     <div class="res-m"><div class="res-m-head"><span class="res-m-num">Marmita #${i+1}</span><span class="res-m-price">${fR(m.preco)}</span></div>
     <div class="res-m-items">${m.partes.map(p=>`<div class="res-m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}</div>
     ${m.obs?`<div style="padding:6px 14px 8px;font-size:12px;color:var(--g700);background:var(--g50);border-top:1px solid var(--borda)"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}</div>`).join('')+
-    (aOrcExtras.length?`<div style="margin-top:10px;padding-top:10px;border-top:2px dashed var(--borda)"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:6px">Itens personalizados</div>`+
-      aOrcExtras.map(e=>`<div class="res-m" style="margin-bottom:6px"><div class="res-m-head"><span class="res-m-num">${e.nome}</span><span class="res-m-price">${fR(e.preco)}</span></div>${e.g||e.desc?`<div class="res-m-items">${e.g?`<div class="res-m-item" style="font-style:italic;color:var(--txt3)">${e.g}</div>`:''} ${e.desc?`<div class="res-m-item">${e.desc}</div>`:''}</div>`:''}</div>`).join('')+`</div>`:'');
+    (allExtras.length?`<div style="margin-top:10px;padding-top:10px;border-top:2px dashed var(--borda)"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:6px">Itens personalizados</div>`+
+      allExtras.map(e=>`<div class="res-m" style="margin-bottom:6px"><div class="res-m-head"><span class="res-m-num">${e.nome}</span><span class="res-m-price">${fR(e.preco)}</span></div>${e.g||e.desc?`<div class="res-m-items">${e.g?`<div class="res-m-item" style="font-style:italic;color:var(--txt3)">${e.g}</div>`:''} ${e.desc?`<div class="res-m-item">${e.desc}</div>`:''}</div>`:''}</div>`).join('')+`</div>`:'');
   const totsHtml=`
     <div class="res-tr"><span>Subtotal</span><span>${fR(sub)}</span></div>
     <div class="res-tr"><span>Taxa de entrega (${zonaNome})</span><span>${fR(taxa)}</span></div>
@@ -2463,10 +2782,10 @@ function aOrcGoRes(){
         <div class="res-tots">${totsHtml}</div>
       </div>
       <div class="res-foot" style="flex-wrap:wrap;gap:10px">
-        <button class="btn btn-p" onclick="aOrcCopyOrc()">Copiar orçamento</button>
-        <button class="btn btn-wpp" onclick="aOrcSendWpp()">Enviar pelo WhatsApp</button>
+        <button class="btn btn-p" style="font-size:15px;padding:13px 30px;box-shadow:0 4px 20px rgba(29,92,58,.4)" onclick="aOrcSalvar(this)">Salvar como pedido ✓</button>
         <button class="btn" style="background:#1D5C3A;color:#fff" onclick="aOrcBaixarPDF()">⬇ Baixar PDF</button>
-        <button class="btn" style="background:#246B43;color:#fff" onclick="aOrcSalvar(this)">Salvar como pedido ✓</button>
+        <button class="btn btn-wpp" onclick="aOrcSendWpp()">Enviar pelo WhatsApp</button>
+        <button class="btn btn-outline" onclick="aOrcCopyOrc()">Copiar orçamento</button>
       </div>
       <div style="margin-top:16px;background:#f0f0f0;border-radius:8px;padding:14px;font-size:12px;font-family:monospace;white-space:pre-wrap;color:#333;line-height:1.6">${txt}</div>
     </div>`;
@@ -2481,17 +2800,21 @@ function aOrcBuildTxt(){
   const zona=ZONAS.find(z=>z.key===zonaKey);
   const zonaNome=zona?.nome||'—';const taxa=zona?.taxa||0;
   const endereco=($('aorc-end')?.value||'').trim()||'A informar';
+  const _isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
+  const _toExtra=m=>({nome:m.partes[0].nome,g:m.partes[0].g||'',preco:m.preco,desc:m.obs||''});
+  const regularMs=aOrcMarmitas.filter(m=>!_isExtraM(m));
+  const allExtras=[...aOrcMarmitas.filter(_isExtraM).map(_toExtra),...aOrcExtras];
   const mSub=aOrcMarmitas.reduce((a,m)=>a+m.preco,0);
   const eSub=aOrcExtras.reduce((a,e)=>a+e.preco,0);
   const sub=mSub+eSub;
   const total=sub+taxa;
-  const lines=aOrcMarmitas.map((m,i)=>{
+  const lines=regularMs.map((m,i)=>{
     const itens=m.partes.map(p=>`    · ${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}`).join('\n');
     const obsLine=m.obs?`\n    Obs: ${m.obs}`:'';
     return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}${obsLine}`;
   }).join('\n\n');
-  const extLines=aOrcExtras.length?'\n\n  — Itens personalizados —\n'+aOrcExtras.map(e=>`  ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco)}${e.desc?'\n    '+e.desc:''}`).join('\n'):'';
-  return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${nome}\nWhatsApp: ${tel}\nData: ${dataFmt}\nTotal: ${aOrcMarmitas.length} marmita${aOrcMarmitas.length>1?'s':''}\n\n${lines}${extLines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${endereco}`;
+  const extLines=allExtras.length?'\n\n  — Itens personalizados —\n'+allExtras.map(e=>`  ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco)}${e.desc?'\n    '+e.desc:''}`).join('\n'):'';
+  return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${nome}\nWhatsApp: ${tel}\nData: ${dataFmt}\nTotal: ${regularMs.length} marmita${regularMs.length!==1?'s':''}\n\n${lines}${extLines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${endereco}`;
 }
 function aOrcCopyOrc(){navigator.clipboard.writeText(aOrcBuildTxt()).then(()=>toast('Orçamento copiado ✓'))}
 function aOrcSendWpp(){
@@ -2545,6 +2868,7 @@ async function aOrcSalvar(btn){
     local.unshift({...payload,created_at:new Date().toISOString(),_local:true});
     localStorage.setItem('mermitas_pedidos_local',JSON.stringify(local));
     await loadAdminOrders();
+    _aOrcOrdemSalva=true;
     if(btn){btn.textContent='Salvo localmente ✓';setTimeout(()=>{if(btn)btn.textContent='Salvar como pedido ✓';},3000);}
     toast('Salvo localmente — verifique o console para detalhes do erro Supabase');
     // mostra instrução detalhada
@@ -2552,6 +2876,7 @@ async function aOrcSalvar(btn){
     setTimeout(()=>alert(msg),100);
     return;
   }
+  _aOrcOrdemSalva=true;
   toast('Pedido de '+nome+' salvo'+(userId?' e vinculado ao perfil do cliente':'')+' ✓');
   await loadAdminOrders();
 }
@@ -2575,10 +2900,12 @@ async function aOrcBaixarPDF(){
       ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('')+
     ((d.extras||[]).length?`<div style="margin-top:14px;padding-top:10px;border-top:2px dashed #d4ede0"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6B8070;margin-bottom:8px">Itens personalizados</div>`+
-      (d.extras||[]).map(e=>`<div class="marmita"><div class="m-head"><span>${e.nome}</span><span>${fR(e.preco)}</span></div>${e.g?`<div class="m-item" style="font-style:italic;color:#6B8070">${e.g}</div>`:''} ${e.desc?`<div class="m-item">${e.desc}</div>`:''}</div>`).join('')+`</div>`:'');
+      (d.extras||[]).map(e=>{const gFmt=e.g?(/^\d+(\.\d+)?$/.test(e.g.trim())?e.g+'g':e.g):'';const partes=[e.desc,gFmt?`(${gFmt})`:null].filter(Boolean).join(' ');const linha=partes?`${partes} — ${fR(e.preco)}`:fR(e.preco);return`<div class="marmita"><div class="m-head"><span>${e.nome}</span><span>${fR(e.preco)}</span></div><div class="m-item">${linha}</div></div>`;}).join('')+`</div>`:'');
   const w=window.open('','_blank','width=820,height=960');
   w.document.write(_pdfTemplate({logoHtml,nome:d.nome||'—',tel:d.tel||'—',dataFmt:d.dataFmt||'—',zonaNome:d.zonaNome||'—',endereco:d.endereco||'A informar',msHtml,sub:d.sub||0,taxa:d.taxa||0,total:d.total||0,cupomHtml:''}));
   w.document.close();
+  _aOrcOrdemSalva=true;
+  aOrcSalvar(null);
 }
 function aOrcReset(){
   if(aOrcMarmitas.length&&!confirm('Limpar tudo e começar novo orçamento?'))return;
@@ -2604,6 +2931,38 @@ function aOrcSalvarCliente(){
 
 /* ── clientes admin ── */
 let _cliData=[];
+function _telSuffix(tel){
+  return (tel||'').replace(/\D/g,'').slice(-8);
+}
+function _applyClienteSaved(base,c){
+  const zona=c.zona||base.zona||'';
+  return {
+    ...base,
+    uid:c.id||c.uid||base.uid||null,
+    nome:c.nome||base.nome,
+    tel:c.tel||base.tel,
+    email:c.email||base.email||'',
+    zona,
+    zonaNome:c.zonaNome||c.zona_nome||ZONA_N[zona]||base.zonaNome,
+    endereco:c.endereco||base.endereco,
+    taxa:c.taxa??ZONA_T[zona]??base.taxa??0
+  };
+}
+function _upsertClienteSaved(entry,oldTel){
+  const saved=JSON.parse(localStorage.getItem('mermitas_clientes')||'[]');
+  const oldSuffix=_telSuffix(oldTel||entry.tel);
+  const newSuffix=_telSuffix(entry.tel);
+  const aliases=Array.from(new Set([...(entry.telAliases||[]),oldSuffix,newSuffix].filter(Boolean)));
+  const idx=saved.findIndex(s=>
+    (entry.id&&(s.id===entry.id||s.uid===entry.id))||
+    (s.telAliases||[]).some(t=>aliases.includes(t))||
+    (_telSuffix(s.tel)&&(oldSuffix&&_telSuffix(s.tel)===oldSuffix||newSuffix&&_telSuffix(s.tel)===newSuffix))
+  );
+  const next={...entry,telAliases:aliases,savedAt:new Date().toISOString()};
+  if(idx>=0) saved[idx]={...saved[idx],...next};
+  else saved.push(next);
+  localStorage.setItem('mermitas_clientes',JSON.stringify(saved));
+}
 async function loadAdminClientes(){
   const el=$('admin-clientes-list');if(!el)return;
   el.innerHTML='<div style="color:rgba(255,255,255,.3);font-size:13px;padding:20px 0">Carregando…</div>';
@@ -2641,10 +3000,12 @@ async function loadAdminClientes(){
   // 3. clientes salvos só no localStorage (sem nenhum pedido ainda)
   const saved=JSON.parse(localStorage.getItem('mermitas_clientes')||'[]');
   saved.forEach(c=>{
-    const telKey='tel:'+(c.tel||'').replace(/\D/g,'').slice(-8);
-    if(!map['uid:'+c.id]&&!map[telKey]){
-      map[telKey]={uid:null,nome:c.nome,tel:c.tel,email:'',zona:c.zona,zonaNome:c.zonaNome,endereco:c.endereco,taxa:0,pedidos:[],totalGasto:0};
-    }
+    const uidKey=(c.id||c.uid)?'uid:'+(c.id||c.uid):null;
+    const telKeys=[...(c.telAliases||[]),_telSuffix(c.tel)].filter(Boolean).map(t=>'tel:'+t);
+    const foundTelKey=telKeys.find(k=>map[k]);
+    const telKey=telKeys[telKeys.length-1]||'tel:';
+    const key=(uidKey&&map[uidKey])?uidKey:(foundTelKey||uidKey||telKey);
+    map[key]=_applyClienteSaved(map[key]||{uid:c.id||c.uid||null,email:'',pedidos:[],totalGasto:0},c);
   });
 
   // pedidos localStorage
@@ -2722,6 +3083,7 @@ async function loadAdminClientes(){
             <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
               <button onclick="cliCopyOrc(${ci},${pi})" style="background:rgba(76,175,114,.15);border:none;color:#4CAF72;font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;border-radius:16px;cursor:pointer">Copiar orçamento</button>
               <button onclick="aOrcUsarBase(${ci},${pi})" style="background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.6);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;border-radius:16px;cursor:pointer">Usar como base</button>
+              <button onclick="_gerarFichaCli(${ci},${pi})" style="background:rgba(255,255,255,.07);border:none;color:rgba(255,255,255,.6);font-family:'Nunito',sans-serif;font-size:11px;font-weight:700;padding:5px 12px;border-radius:16px;cursor:pointer">📋 Ficha de cozinha</button>
             </div>
           </div>`;
         }).join('')}
@@ -2747,32 +3109,42 @@ async function adminSalvarCli(ci){
   if(!nome||!tel){toast('Nome e WhatsApp obrigatórios');return}
   const zonaNome=ZONA_N[zona]||zona;
   const taxa=ZONA_T[zona]||0;
+  const oldTel=c.tel||tel;
+  const oldSuffix=_telSuffix(oldTel);
+  const endereco=end||'A informar';
+  const savedEntry={id:c.uid||null,nome,tel,email:c.email||'',zona,zonaNome,endereco,taxa};
+  _upsertClienteSaved(savedEntry,oldTel);
+  let remoteOk=true;
 
   // se o cliente tem uid (Auth) → atualiza tabela clientes
   const userIdPedido=c.uid||(c.pedidos[0]||{}).user_id||null;
   if(userIdPedido){
-    await sb.from('clientes').update({nome,tel,zona,zona_nome:zonaNome,endereco:end||'A informar',taxa}).eq('id',userIdPedido);
+    const{error}=await sb.from('clientes').update({nome,tel,zona,zona_nome:zonaNome,endereco,taxa}).eq('id',userIdPedido);
+    remoteOk=!error;
+    if(error) console.warn('Erro ao atualizar cliente no Supabase:',error);
   } else {
     // cliente admin (sem auth): atualiza pedidos no Supabase
-    const oldTel=(c.tel||'').replace(/\D/g,'');
-    if(oldTel.length>=8){
-      await sb.from('pedidos').update({client_nome:nome,client_tel:tel,client_zona:zona,client_zona_nome:zonaNome,client_endereco:end||'A informar',taxa})
-        .ilike('client_tel','%'+oldTel.slice(-8)+'%');
+    if(oldSuffix.length>=8){
+      const{error}=await sb.from('pedidos').update({client_nome:nome,client_tel:tel,client_zona:zona,client_zona_nome:zonaNome,client_endereco:endereco,taxa})
+        .ilike('client_tel','%'+oldSuffix);
+      remoteOk=!error;
+      if(error) console.warn('Erro ao atualizar pedidos do cliente no Supabase:',error);
     }
-    // atualiza localStorage clientes
-    const saved=JSON.parse(localStorage.getItem('mermitas_clientes')||'[]');
-    const idx=saved.findIndex(s=>(s.tel||'').replace(/\D/g,'').slice(-8)===(oldTel.slice(-8)));
-    if(idx>=0){saved[idx]={...saved[idx],nome,tel,zona,zonaNome,endereco:end||'A informar'};localStorage.setItem('mermitas_clientes',JSON.stringify(saved));}
-    // atualiza pedidos no localStorage
-    const local=JSON.parse(localStorage.getItem('mermitas_pedidos_local')||'[]');
-    local.forEach(p=>{if((p.client_tel||'').replace(/\D/g,'').slice(-8)===oldTel.slice(-8)){p.client_nome=nome;p.client_tel=tel;p.client_zona=zona;p.client_zona_nome=zonaNome;p.client_endereco=end||'A informar';p.taxa=taxa;}});
-    localStorage.setItem('mermitas_pedidos_local',JSON.stringify(local));
   }
 
+  // atualiza apenas os pedidos locais correspondentes; nao remove historico.
+  const local=JSON.parse(localStorage.getItem('mermitas_pedidos_local')||'[]');
+  local.forEach(p=>{
+    if(_telSuffix(p.client_tel)===oldSuffix){
+      p.client_nome=nome;p.client_tel=tel;p.client_zona=zona;p.client_zona_nome=zonaNome;p.client_endereco=endereco;p.taxa=taxa;
+    }
+  });
+  localStorage.setItem('mermitas_pedidos_local',JSON.stringify(local));
+
   // update in-memory
-  c.nome=nome;c.tel=tel;c.zona=zona;c.zonaNome=zonaNome;c.endereco=end||'A informar';c.taxa=taxa;
+  c.nome=nome;c.tel=tel;c.zona=zona;c.zonaNome=zonaNome;c.endereco=endereco;c.taxa=taxa;
   // fechar painel de edição e recarregar lista
-  toast('Cliente atualizado ✓');
+  toast(remoteOk?'Cliente atualizado ✓':'Cliente atualizado nesta aba ✓');
   loadAdminClientes();
 }
 
