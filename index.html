@@ -1979,28 +1979,45 @@ let expandedOrders = new Set();
 let _selMode = false;
 let _selSet = new Set();
 
+/* sessão admin persistente (30 dias, renovada a cada acesso) */
+const ADMIN_SESS_KEY='mermitas_admin_sess';
+const ADMIN_SESS_DUR=1000*60*60*24*30;
+function _adminSessValida(){
+  try{const s=JSON.parse(localStorage.getItem(ADMIN_SESS_KEY)||'null');return !!(s&&s.exp>Date.now())}catch(e){return false}
+}
+function _adminSessSalvar(){
+  localStorage.setItem(ADMIN_SESS_KEY,JSON.stringify({exp:Date.now()+ADMIN_SESS_DUR}));
+}
+async function _adminEnter(){
+  adminLogado=true;
+  _adminSessSalvar();
+  showScreen('admin');
+  await loadAdminOrders();
+  startAdminRealtime();
+  renderAdminOrders();
+  renderAdminCupons();
+  renderAdminCdp();
+  renderAdminZonas();
+}
+
 /* entry: ?admin na URL */
-if(new URLSearchParams(location.search).get('admin')!==null) showScreen('admin-login');
+if(new URLSearchParams(location.search).get('admin')!==null){
+  if(_adminSessValida()) _adminEnter(); else showScreen('admin-login');
+}
 
 async function doAdminLogin(){
   const pw=$('admin-pw')?.value||'';
   const err=$('admin-pw-err');
   if(pw===ADMIN_PW){
-    adminLogado=true;err.style.display='none';
-    showScreen('admin');
-    await loadAdminOrders();
-    startAdminRealtime();
-    renderAdminOrders();
-    renderAdminCupons();
-    renderAdminCdp();
-    renderAdminZonas();
+    err.style.display='none';
+    await _adminEnter();
   } else {
     err.style.display='block';
   }
 }
 
 function doAdminLogout(){
-  adminLogado=false;stopAdminRealtime();showScreen('home');
+  adminLogado=false;localStorage.removeItem(ADMIN_SESS_KEY);stopAdminRealtime();showScreen('home');
 }
 
 function _aOrcConfirmLeave(n){
@@ -3069,15 +3086,17 @@ async function loadAdminClientes(){
           const dt=new Date(p.created_at).toLocaleDateString('pt-BR');
           const hora=new Date(p.created_at).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'});
           const nm=(p.marmitas||[]).length;
+          const ne=(p.extras||[]).length;
           const st={novo:'🟢 Novo',visto:'👁 Visto',preparo:'🔄 Em preparo',entregue:'✅ Entregue'}[p.status]||p.status;
-          const itensHtml=(p.marmitas||[]).map((m,mi)=>`<div style="font-size:11px;color:rgba(255,255,255,.4);margin-left:8px">Marmita #${mi+1}: ${(m.partes||[]).map(pt=>pt.nome).join(', ')}</div>`).join('');
+          const itensHtml=(p.marmitas||[]).map((m,mi)=>`<div style="font-size:11px;color:rgba(255,255,255,.4);margin-left:8px">Marmita #${mi+1}: ${(m.partes||[]).map(pt=>pt.nome).join(', ')}</div>`).join('')+
+            (p.extras||[]).map(e=>`<div style="font-size:11px;color:rgba(255,255,255,.4);margin-left:8px">Personalizado: ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco||0)}</div>`).join('');
           return `<div style="background:rgba(0,0,0,.2);border-radius:10px;padding:12px 14px;margin-bottom:8px">
             <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;margin-bottom:6px">
               <div>
                 <span style="font-size:12px;font-weight:800;color:#4CAF72">${dt} ${hora}</span>
                 <span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:8px">${st}</span>
               </div>
-              <div style="font-size:14px;font-weight:800;color:#fff">${fR(p.total||0)} · ${nm} marmita${nm!==1?'s':''}</div>
+              <div style="font-size:14px;font-weight:800;color:#fff">${fR(p.total||0)} · ${nm} marmita${nm!==1?'s':''}${ne?` + ${ne} personalizado${ne!==1?'s':''}`:''}</div>
             </div>
             ${itensHtml}
             <div style="display:flex;gap:6px;margin-top:10px;flex-wrap:wrap">
@@ -3156,7 +3175,8 @@ function cliCopyOrc(ci,pi){
     const itens=(m.partes||[]).map(pt=>`    · ${pt.nome}${pt.g?` (${pt.g}g)`:''} — ${fR(pt.preco)}`).join('\n');
     return `  Marmita #${mi+1} — ${fR(m.preco)}\n${itens}`;
   }).join('\n\n');
-  const txt=`🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${c.nome}\nWhatsApp: ${c.tel||'—'}\nData: ${dt}\nTotal: ${(p.marmitas||[]).length} marmita${(p.marmitas||[]).length>1?'s':''}\n\n${lines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${p.client_endereco||'A informar'}`;
+  const extLines=(p.extras||[]).length?'\n\n  — Itens personalizados —\n'+(p.extras||[]).map(e=>`  ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco||0)}${e.desc?'\n    '+e.desc:''}`).join('\n'):'';
+  const txt=`🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${c.nome}\nWhatsApp: ${c.tel||'—'}\nData: ${dt}\nTotal: ${(p.marmitas||[]).length} marmita${(p.marmitas||[]).length>1?'s':''}\n\n${lines}${extLines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${p.client_endereco||'A informar'}`;
   navigator.clipboard.writeText(txt).then(()=>toast('Orçamento copiado ✓'));
 }
 
@@ -3169,8 +3189,10 @@ function aOrcUsarBase(ci,pi){
     if($('aorc-zona'))$('aorc-zona').value=c.zona||'';
     if($('aorc-end'))$('aorc-end').value=c.endereco||'';
     aOrcRefreshTotal();
-    if(p&&p.marmitas){
-      aOrcMarmitas=JSON.parse(JSON.stringify(p.marmitas));
+    if(p&&(p.marmitas?.length||p.extras?.length)){
+      aOrcMarmitas=JSON.parse(JSON.stringify(p.marmitas||[]));
+      // itens personalizados do pedido voltam como pseudo-marmitas (mesmo formato de aOrcAddExtra)
+      (p.extras||[]).forEach(e=>aOrcMarmitas.push({partes:[{nome:e.nome,g:e.g||'',preco:e.preco||0,tipo:'extra',desc:e.desc||''}],preco:e.preco||0,obs:e.desc||'',curState:null}));
       aOrcRenderChips();aOrcRefreshTotal();
     }
     toast('Pedido de '+c.nome+' carregado ✓');
