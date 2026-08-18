@@ -1382,7 +1382,7 @@ function filterCat(c,b){
 }
 function renderCdpGrid(c='carbo'){
   const g=$('cdp-grid');if(!g)return;
-  g.innerHTML=(CDP[c]||[]).map(it=>`<div class="mc"><div class="mc-name">${it.nome}</div>${it.desc?`<div class="mc-desc">${it.desc}</div>`:''}<div class="mc-foot"><span class="mc-qty">${it.base}g</span><span class="mc-price">${fR(it.preco)}</span></div></div>`).join('');
+  g.innerHTML=(CDP[c]||[]).filter(it=>it.visivelSite!==false).map(it=>`<div class="mc"><div class="mc-name">${it.nome}</div>${it.desc?`<div class="mc-desc">${it.desc}</div>`:''}<div class="mc-foot"><span class="mc-qty">${it.base}g</span><span class="mc-price">${fR(it.preco)}</span></div></div>`).join('');
 }
 
 /* builder */
@@ -1493,7 +1493,7 @@ function renderG(cat,slot){
      carbo/prot ficam acinzentados se há esp/sopa/assado selecionado */
   const dimFixed = (slot==='esp'||slot==='sopa'||slot==='assado') && (cur.carbo.length||cur.prot.length||cur.leg.length);
   const dimBase  = (slot==='carbo'||slot==='prot') && (cur.esp||cur.sopa||cur.assado);
-  el.innerHTML=CDP[cat].map(it=>{
+  el.innerHTML=CDP[cat].filter(it=>it.visivelSite!==false).map(it=>{
     const sel=isSel(it.id,slot),g=getG(it.id,slot),fx=!!it.fixo;
     const cp=fx?it.preco:rH(it.pg*g);
     const nd=it.nome.length>36?it.nome.slice(0,34)+'…':it.nome;
@@ -2489,19 +2489,64 @@ async function addZonaAdmin(){
 /* ── cardápio admin ── */
 const CDP_LABELS={carbo:'Carboidratos',prot:'Proteínas',leg:'Legumes',esp:'Marmitas especiais',sopa:'Sopas',assados:'Assados'};
 
+async function loadCdp(){
+  const{data,error}=await sb.from('cardapio_itens').select('*').order('ordem');
+  if(error){console.error('Erro ao carregar cardápio:',error);return;}
+  if(data&&data.length){
+    const byCat={};
+    data.forEach(r=>{
+      const it={id:r.id,nome:r.nome,base:r.base,preco:r.preco,visivelSite:r.visivel_site!==false};
+      if(r.fixo)it.fixo=true; else it.pg=r.pg;
+      if(r.desc)it.desc=r.desc;
+      (byCat[r.categoria]=byCat[r.categoria]||[]).push(it);
+    });
+    Object.keys(byCat).forEach(cat=>{CDP[cat]=byCat[cat]});
+    Object.keys(ALL).forEach(k=>delete ALL[k]);
+    Object.values(CDP).forEach(a=>a.forEach(i=>ALL[i.id]=i));
+    renderCdpGrid('carbo');renderAllG();renderAdminCdp();
+  } else {
+    await seedCdp();
+  }
+}
+async function seedCdp(){
+  const rows=[];
+  Object.entries(CDP).forEach(([cat,items])=>{
+    items.forEach((it,i)=>rows.push({
+      id:it.id,categoria:cat,nome:it.nome,base:it.base,preco:it.preco,
+      pg:it.pg??null,fixo:!!it.fixo,desc:it.desc??null,ordem:i+1,visivel_site:true
+    }));
+  });
+  const{error}=await sb.from('cardapio_itens').insert(rows);
+  if(error)console.error('Erro ao inicializar cardápio no banco:',error);
+}
+async function persistCdpItem(cat,it,ordem){
+  const{error}=await sb.from('cardapio_itens').upsert({
+    id:it.id,categoria:cat,nome:it.nome,base:it.base,preco:it.preco,
+    pg:it.pg??null,fixo:!!it.fixo,desc:it.desc??null,ordem,visivel_site:it.visivelSite!==false
+  });
+  if(error)toast('Erro ao salvar no banco: '+error.message);
+}
+async function deleteCdpItemDb(id){
+  const{error}=await sb.from('cardapio_itens').delete().eq('id',id);
+  if(error)toast('Erro ao remover do banco: '+error.message);
+}
+
 function renderAdminCdp(){
   const el=$('admin-cdp-editor');if(!el)return;
   el.innerHTML=Object.entries(CDP).map(([cat,items])=>`
     <div class="cdp-cat-block">
       <div class="cdp-cat-title">${CDP_LABELS[cat]||cat}</div>
-      <div class="zhead" style="display:grid;grid-template-columns:56px 1fr 80px 80px 44px;gap:4px;padding:0 12px 6px;color:rgba(255,255,255,.25);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em">
-        <span>ID</span><span>Nome</span><span style="text-align:right">Base(g)</span><span style="text-align:right">Preço R$</span><span></span>
+      <div class="zhead" style="display:grid;grid-template-columns:56px 1fr 80px 80px 90px 44px;gap:4px;padding:0 12px 6px;color:rgba(255,255,255,.25);font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.06em">
+        <span>ID</span><span>Nome</span><span style="text-align:right">Base(g)</span><span style="text-align:right">Preço R$</span><span style="text-align:center">No site</span><span></span>
       </div>
-      ${items.map((it,i)=>`<div class="cdp-row">
+      ${items.map((it,i)=>`<div class="cdp-row" style="display:grid;grid-template-columns:56px 1fr 80px 80px 90px 44px;gap:4px;align-items:center">
         <span style="font-size:11px;font-weight:800;color:#4CAF72">${it.id}</span>
         <input value="${it.nome.replace(/"/g,'&quot;')}" onchange="updCdp('${cat}',${i},'nome',this.value)">
         <input type="number" value="${it.base}" onchange="updCdp('${cat}',${i},'base',+this.value)" style="text-align:right" min="1">
         <input type="number" value="${it.preco}" step="0.5" onchange="updCdp('${cat}',${i},'preco',+this.value)" style="text-align:right" min="0">
+        <label style="display:flex;align-items:center;justify-content:center;gap:5px;cursor:pointer" title="Se marcado, o item aparece no cardápio público e no pedido do cliente. Se desmarcado, só você vê no painel admin.">
+          <input type="checkbox" ${it.visivelSite!==false?'checked':''} onchange="toggleCdpVisivel('${cat}',${i},this.checked)">
+        </label>
         <button onclick="delCdpItem('${cat}',${i})" title="Remover" style="background:rgba(192,57,43,.15);border:none;color:#E74C3C;border-radius:6px;padding:4px 6px;cursor:pointer;font-size:12px">✕</button>
       </div>`).join('')}
       <button onclick="addCdpItem('${cat}')" style="margin-top:6px;background:rgba(76,175,114,.08);border:1px dashed rgba(76,175,114,.25);color:#4CAF72;font-family:'Nunito',sans-serif;font-size:12px;font-weight:700;padding:7px;border-radius:8px;cursor:pointer;width:100%">+ Adicionar item</button>
@@ -2516,11 +2561,19 @@ function updCdp(cat,i,field,val){
   }
   ALL[CDP[cat][i].id]=CDP[cat][i];
   renderAllG();
+  persistCdpItem(cat,CDP[cat][i],i+1);
+}
+function toggleCdpVisivel(cat,i,val){
+  CDP[cat][i].visivelSite=val;
+  renderCdpGrid('carbo');renderAllG();
+  persistCdpItem(cat,CDP[cat][i],i+1);
+  toast(val?'Item visível no site ✓':'Item agora só visível no admin');
 }
 function delCdpItem(cat,i){
   const id=CDP[cat][i].id;
   CDP[cat].splice(i,1);delete ALL[id];
-  renderAdminCdp();renderAllG();toast('Item removido');
+  renderAdminCdp();renderAllG();renderCdpGrid('carbo');toast('Item removido');
+  deleteCdpItemDb(id);
 }
 function addCdpItem(cat){
   const nome=prompt('Nome do novo item:');if(!nome)return;
@@ -2528,10 +2581,15 @@ function addCdpItem(cat){
   const preco=+prompt('Preço base (R$):',10)||10;
   const fixo=cat==='sopa'||cat==='assados';
   const prefix={carbo:'C',prot:'P',leg:'L',esp:'E',sopa:'S',assados:'A'}[cat]||'X';
-  const id=prefix+(Date.now()%100000);
-  const newItem={id,nome,base,preco,...(fixo?{fixo:true}:{pg:preco/base})};
+  const maxN=CDP[cat].reduce((m,it)=>{
+    const n=+String(it.id).slice(prefix.length);
+    return Number.isFinite(n)&&n>m?n:m;
+  },0);
+  const id=prefix+(maxN+1);
+  const newItem={id,nome,base,preco,visivelSite:false,...(fixo?{fixo:true}:{pg:preco/base})};
   CDP[cat].push(newItem);ALL[id]=newItem;
-  renderAdminCdp();renderAllG();toast('Item adicionado ✓');
+  renderAdminCdp();renderAllG();toast('Item adicionado ✓ (só visível no admin — habilite "No site" se quiser publicar)');
+  persistCdpItem(cat,newItem,CDP[cat].length);
 }
 
 /* ═══════════════════════════════════════════
@@ -2669,18 +2727,21 @@ function aOrcSaveM(){
   const preco=+(($('aorc-price-inp')?.value)||0)||0;
   const obs=($('aorc-obs')?.value||'').trim();
   const snap=JSON.parse(JSON.stringify(aOrcCur));
+  let savedIdx;
   if(aOrcEditIdx>=0){
+    savedIdx=aOrcEditIdx;
     aOrcMarmitas[aOrcEditIdx]={partes:parts,preco,obs,curState:snap};
     toast('Marmita #'+(aOrcEditIdx+1)+' atualizada ✓');
     aOrcEditIdx=-1;
   } else {
     aOrcMarmitas.push({partes:parts,preco,obs,curState:snap});
+    savedIdx=aOrcMarmitas.length-1;
     toast('Marmita #'+aOrcMarmitas.length+' salva ✓');
   }
   Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});
   Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});
   aOrcRenderBuilder();aOrcUpdatePrev();aOrcRenderChips();aOrcRefreshTotal();
-  setTimeout(()=>scrollSmoothTo($('aorc-chips'),'top'),120);
+  setTimeout(()=>scrollSmoothTo($('aorc-chip-'+savedIdx),'top'),120);
 }
 function aOrcDelM(i){if(aOrcEditIdx===i)aOrcEditIdx=-1;aOrcMarmitas.splice(i,1);aOrcRenderChips();aOrcRefreshTotal();}
 function aOrcDupM(i){
@@ -2729,7 +2790,7 @@ function aOrcRenderChips(){
         <span style="font-size:13px;color:rgba(255,255,255,.85)">${p.nome}${p.g?` <span style="font-size:11px;color:rgba(255,255,255,.38)">(${p.g}g)</span>`:''}</span>
         <span style="font-size:12px;font-weight:700;color:#4CAF72;white-space:nowrap;margin-left:12px">${fR(p.preco)}</span>
       </div>`).join('');
-    return `<div style="background:rgba(0,0,0,.25);border:1px solid ${border};border-radius:10px;padding:12px 14px;margin-bottom:8px${shadow}">
+    return `<div id="aorc-chip-${i}" style="background:rgba(0,0,0,.25);border:1px solid ${border};border-radius:10px;padding:12px 14px;margin-bottom:8px${shadow}">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;gap:10px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:10px">
           <span style="font-size:10px;font-weight:800;color:#4CAF72;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap">${label}</span>
@@ -3410,6 +3471,7 @@ function adminWppCliente(tel){
 /* init */
 renderCdpGrid('carbo');
 loadZonas();
+loadCdp();
 $('nav-right')?.addEventListener('click',()=>toggleNavMenu(false));
 document.addEventListener('click',e=>{if(!e.target.closest('nav'))toggleNavMenu(false)});
 $('admin-tabs-top')?.addEventListener('scroll',atabArrows);
