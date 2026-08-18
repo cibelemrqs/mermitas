@@ -2660,11 +2660,21 @@ function aOrcAddCustomItem(slot){
   if(!nome){toast('Informe o nome do item');return}
   const g=Math.max(1,+($('aorc-cg-'+slot)?.value||1));
   const preco=+($('aorc-cf-'+slot)?.value||0);
-  if(!aOrcCur[slot+'Custom'])aOrcCur[slot+'Custom']=[];
-  aOrcCur[slot+'Custom'].push({nome,g,preco});
+  /* item personalizado entra de vez no cardápio (categoria = slot), só visível no admin,
+     e já fica selecionado nesta marmita — assim aparece como opção pras próximas também */
+  const prefix={carbo:'C',prot:'P',leg:'L'}[slot]||'X';
+  const maxN=CDP[slot].reduce((m,it)=>{
+    const n=+String(it.id).slice(prefix.length);
+    return Number.isFinite(n)&&n>m?n:m;
+  },0);
+  const id=prefix+(maxN+1);
+  const newItem={id,nome,base:g,preco,pg:preco/g,visivelSite:false};
+  CDP[slot].push(newItem);ALL[id]=newItem;
+  persistCdpItem(slot,newItem,CDP[slot].length);
   aOrcCustomFormOpen[slot]=false;
-  aOrcRenderBuilder();aOrcUpdatePrev();
-  toast('"'+nome+'" adicionado ✓');
+  renderAdminCdp();
+  aOrcSelItem(id,slot);
+  toast('"'+nome+'" adicionado ao cardápio (só admin) e selecionado ✓');
 }
 function aOrcDelCustomItem(slot,idx){
   (aOrcCur[slot+'Custom']||[]).splice(idx,1);
