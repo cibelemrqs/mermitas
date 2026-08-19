@@ -1829,10 +1829,8 @@ async function cliHistPDF(pi){
   const taxa=p.taxa||0,sub=p.subtotal||0,total=p.total||0;
   const msHtml=(p.marmitas||[]).map((m,i)=>`
     <div class="marmita">
-      <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
-      ${(m.partes||[]).map(pt=>`<div class="m-item">${pt.nome}${pt.g?` (${pt.g}g)`:''} — ${fR(pt.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
-      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
+      <div class="m-head"><span>Marmita #${i+1}${_marmitaTotalG(m)>0?`<span style="margin-left:16px;font-weight:600;color:#FFF3B0">Total: ${_marmitaTotalG(m)}g</span>`:''}</span><span>${fR(m.preco)}</span></div>
+      ${(m.partes||[]).map(pt=>`<div class="m-item">${pt.nome}${pt.g?` (${pt.g}g)`:''} — ${fR(pt.preco)}</div>`).join('')}      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('');
   const w=window.open('','_blank','width=820,height=960');
   w.document.write(_pdfTemplate({logoHtml,nome:user?.nome||'—',tel:user?.tel||'—',dataFmt:dt,zonaNome:p.client_zona_nome||'—',endereco:p.client_endereco||'A informar',msHtml,sub,taxa,total,cupomHtml:''}));
@@ -1849,10 +1847,8 @@ async function cliOrcBaixarPDF(){
   const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
   const msHtml=marmitas.map((m,i)=>`
     <div class="marmita">
-      <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
-      ${m.partes.map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
-      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
+      <div class="m-head"><span>Marmita #${i+1}${_marmitaTotalG(m)>0?`<span style="margin-left:16px;font-weight:600;color:#FFF3B0">Total: ${_marmitaTotalG(m)}g</span>`:''}</span><span>${fR(m.preco)}</span></div>
+      ${m.partes.map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('');
   const cupomHtml=desc>0?`<div class="tr"><span>Cupom ${cupomAtivo?.codigo||''}</span><span style="color:#1D5C3A;font-weight:700">− ${fR(desc)}</span></div>`:'';
   const w=window.open('','_blank','width=820,height=960');
@@ -3207,10 +3203,8 @@ async function aOrcBaixarPDF(){
   const logoHtml=logoB64?`<img class="logo" src="${logoB64}" alt="Logo">`:'';
   const msHtml=d.marmitas.map((m,i)=>`
     <div class="marmita">
-      <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
-      ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
-      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
+      <div class="m-head"><span>Marmita #${i+1}${_marmitaTotalG(m)>0?`<span style="margin-left:16px;font-weight:600;color:#FFF3B0">Total: ${_marmitaTotalG(m)}g</span>`:''}</span><span>${fR(m.preco)}</span></div>
+      ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('')+
     ((d.extras||[]).length?`<div style="margin-top:14px;padding-top:10px;border-top:2px dashed #d4ede0"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6B8070;margin-bottom:8px">Itens personalizados</div>`+
       (d.extras||[]).map(e=>{const gFmt=e.g?(/^\d+(\.\d+)?$/.test(e.g.trim())?e.g+'g':e.g):'';const partes=[e.desc,gFmt?`(${gFmt})`:null].filter(Boolean).join(' ');const linha=partes?`${partes} — ${fR(e.preco)}`:fR(e.preco);return`<div class="marmita"><div class="m-head"><span>${e.nome}</span><span>${fR(e.preco)}</span></div><div class="m-item">${linha}</div></div>`;}).join('')+`</div>`:'');
@@ -3516,10 +3510,8 @@ async function adminOrderPDF(id){
   const grandTotal=o.total+extraTotal;
   const msHtml=o.marmitas.map((m,i)=>`
     <div class="marmita">
-      <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
-      ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
-      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
+      <div class="m-head"><span>Marmita #${i+1}${_marmitaTotalG(m)>0?`<span style="margin-left:16px;font-weight:600;color:#FFF3B0">Total: ${_marmitaTotalG(m)}g</span>`:''}</span><span>${fR(m.preco)}</span></div>
+      ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('')+
     ((o.extras||[]).length?`<div style="margin-top:14px;padding-top:10px;border-top:2px dashed #d4ede0"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6B8070;margin-bottom:8px">Itens personalizados</div>`+
       (o.extras||[]).map(e=>{const gFmt=e.g?(/^\d+(\.\d+)?$/.test(String(e.g).trim())?e.g+'g':e.g):'';const partes=[e.desc,gFmt?`(${gFmt})`:null].filter(Boolean).join(' ');const linha=partes?`${partes} — ${fR(e.preco)}`:fR(e.preco);return`<div class="marmita"><div class="m-head"><span>${e.nome}</span><span>${fR(e.preco)}</span></div><div class="m-item">${linha}</div></div>`;}).join('')+`</div>`:'');
