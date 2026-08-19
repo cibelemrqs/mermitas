@@ -1698,8 +1698,10 @@ function buildTxt(){
   const sub=marmitas.reduce((a,m)=>a+m.preco,0),total=Math.max(0,sub-desc+taxa);
   const lines=marmitas.map((m,i)=>{
     const itens=m.partes.map(p=>`    · ${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}`).join('\n');
+    const gTotal=_marmitaTotalG(m);
+    const gLine=gTotal>0?`\n    _Total: ${gTotal}g_`:'';
     const obsLine=m.obs?`\n    Obs: ${m.obs}`:'';
-    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}${obsLine}`;
+    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}${gLine}${obsLine}`;
   }).join('\n\n');
   return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${user?.nome||'—'}\nWhatsApp: ${user?.tel||'—'}\nData: ${new Date().toLocaleDateString('pt-BR')}\nTotal: ${marmitas.length} marmita${marmitas.length>1?'s':''}\n\n${lines}${desc>0?`\n\nCupom ${cupomAtivo?.codigo||''}: − ${fR(desc)}`:''}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${user?.endereco||'A informar'}`;
 }
@@ -1716,6 +1718,7 @@ function renderResumo(){
   $('res-ms').innerHTML=marmitas.map((m,i)=>`
     <div class="res-m"><div class="res-m-head"><span class="res-m-num">Marmita #${i+1}</span><span class="res-m-price">${fR(m.preco)}</span></div>
     <div class="res-m-items">${m.partes.map(p=>`<div class="res-m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}</div>
+    ${_marmitaTotalG(m)>0?`<div style="font-size:11px;font-weight:700;font-style:italic;color:var(--txt3);margin-top:2px">Total: ${_marmitaTotalG(m)}g</div>`:''}
     ${m.obs?`<div style="padding:6px 14px 8px;font-size:12px;color:var(--g700);background:var(--g50);border-top:1px solid var(--borda)"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}</div>`).join('');
   $('res-tots').innerHTML=`
     <div class="res-tr"><span>Subtotal</span><span>${fR(sub)}</span></div>
@@ -1828,7 +1831,7 @@ async function cliHistPDF(pi){
     <div class="marmita">
       <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
       ${(m.partes||[]).map(pt=>`<div class="m-item">${pt.nome}${pt.g?` (${pt.g}g)`:''} — ${fR(pt.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;color:#2D8050;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
+      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
       ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('');
   const w=window.open('','_blank','width=820,height=960');
@@ -1848,7 +1851,7 @@ async function cliOrcBaixarPDF(){
     <div class="marmita">
       <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
       ${m.partes.map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;color:#2D8050;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
+      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
       ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('');
   const cupomHtml=desc>0?`<div class="tr"><span>Cupom ${cupomAtivo?.codigo||''}</span><span style="color:#1D5C3A;font-weight:700">− ${fR(desc)}</span></div>`:'';
@@ -1875,7 +1878,7 @@ function _pdfTemplate({logoHtml,nome,tel,dataFmt,zonaNome,endereco,msHtml,sub,ta
   .cl{font-size:9px;text-transform:uppercase;letter-spacing:.07em;color:#6B8070;font-weight:700;margin-bottom:2px}
   .cv{font-size:14px;font-weight:700;color:#1C2B22}
   .marmita{border:1px solid #d4ede0;border-radius:10px;margin-bottom:12px;overflow:hidden}
-  .m-head{display:flex;justify-content:space-between;align-items:center;background:#1D5C3A;color:#fff;padding:9px 14px;font-weight:800;font-size:13px}
+  .m-head{display:flex;justify-content:space-between;align-items:center;background:#1D5C3A;color:#fff;padding:10px 14px 12px;font-weight:800;font-size:13px}
   .m-item{padding:5px 14px;font-size:12px;color:#3D5246;border-bottom:1px solid #edf5ee}
   .m-item:last-child{border-bottom:none}
   .m-obs{padding:5px 14px 7px;font-size:11px;color:#246B43;background:#f0faf4;border-top:1px solid #d4ede0}
@@ -2357,6 +2360,8 @@ function renderOrderCard(o){
       ${exp?`
         <button class="abtn abtn-green" onclick="toggleExtraForm('${o.id}')">+ Adicionar item</button>
         <button class="abtn abtn-ghost" onclick="gerarFichaCozinha(adminOrders.find(x=>x.id==='${o.id}'))">📋 Ficha de cozinha</button>
+        <button class="abtn abtn-ghost" onclick="adminOrderPDF('${o.id}')">⬇ PDF</button>
+        <button class="abtn abtn-ghost" onclick="aOrcUsarBaseOrder('${o.id}')">↺ Usar como base</button>
         <button class="abtn abtn-wpp" onclick="sendAdminWpp('${o.id}')">WhatsApp</button>
         <button class="abtn abtn-red" onclick="deleteOrder('${o.id}')">Excluir</button>
       `:''}
@@ -2492,7 +2497,7 @@ async function addZonaAdmin(){
 }
 
 /* ── cardápio admin ── */
-const CDP_LABELS={carbo:'Carboidratos',prot:'Proteínas',leg:'Legumes',esp:'Marmitas especiais',sopa:'Sopas',assados:'Assados'};
+const CDP_LABELS={carbo:'Carboidratos',prot:'Proteínas',leg:'Legumes',esp:'Marmitas especiais',sopa:'Sopas',assados:'Assados',outros:'Outros (itens personalizados)'};
 
 async function loadCdp(){
   const{data,error}=await sb.from('cardapio_itens').select('*').order('ordem');
@@ -2584,8 +2589,8 @@ function addCdpItem(cat){
   const nome=prompt('Nome do novo item:');if(!nome)return;
   const base=+prompt('Gramagem base (g):',100)||100;
   const preco=+prompt('Preço base (R$):',10)||10;
-  const fixo=cat==='sopa'||cat==='assados';
-  const prefix={carbo:'C',prot:'P',leg:'L',esp:'E',sopa:'S',assados:'A'}[cat]||'X';
+  const fixo=cat==='sopa'||cat==='assados'||cat==='outros';
+  const prefix={carbo:'C',prot:'P',leg:'L',esp:'E',sopa:'S',assados:'A',outros:'O'}[cat]||'X';
   const maxN=CDP[cat].reduce((m,it)=>{
     const n=+String(it.id).slice(prefix.length);
     return Number.isFinite(n)&&n>m?n:m;
@@ -2600,7 +2605,7 @@ function addCdpItem(cat){
 /* ═══════════════════════════════════════════
    ADMIN — NOVO ORÇAMENTO
 ═══════════════════════════════════════════ */
-let aOrcMarmitas=[],aOrcEditIdx=-1,_aOrcSnap={},_aOrcOrdemSalva=false;
+let aOrcMarmitas=[],aOrcEditIdx=-1,_aOrcSnap={},_aOrcOrdemSalva=false,_aOrcSavedId=null;
 let aOrcCur={carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]};
 let aOrcExtras=[];
 let aOrcCustomFormOpen={carbo:false,prot:false,leg:false};
@@ -2799,13 +2804,11 @@ function aOrcEditM(i){
 function aOrcRenderChips(){
   const el=$('aorc-chips');if(!el)return;
   if(!aOrcMarmitas.length){el.innerHTML='<div class="chip-empty" style="color:rgba(255,255,255,.3)">Nenhuma marmita salva</div>';return}
-  const isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
   let mNum=0;
   el.innerHTML=aOrcMarmitas.map((m,i)=>{
     const editing=aOrcEditIdx===i;
-    const extra=isExtraM(m);
-    if(!extra)mNum++;
-    const label=extra?'Item personalizado':`Marmita #${mNum}`;
+    mNum++;
+    const label=`Marmita #${mNum}`;
     const border=editing?'rgba(76,175,114,.6)':'rgba(76,175,114,.15)';
     const shadow=editing?';box-shadow:0 0 0 2px rgba(76,175,114,.25)':'';
     const partesHtml=m.partes.map(p=>`
@@ -2829,6 +2832,7 @@ function aOrcRenderChips(){
         </div>
       </div>
       ${partesHtml}
+      ${_marmitaTotalG(m)>0?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;font-weight:700;color:#4CAF72">Total: ${_marmitaTotalG(m)}g</div>`:''}
       ${m.obs?`<div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.05);font-size:12px;color:rgba(255,255,255,.45)"><span style="font-weight:700;color:rgba(255,255,255,.6)">Obs:</span> ${m.obs}</div>`:''}
     </div>`;
   }).join('');
@@ -2839,12 +2843,26 @@ function aOrcAddExtra(){
   const g=($('aorc-ext-g')?.value||'').trim();
   const preco=+(($('aorc-ext-preco')?.value)||0)||0;
   const desc=($('aorc-ext-desc')?.value||'').trim();
+  /* item personalizado (sem categoria carbo/prot/leg) também entra pro cardápio,
+     numa categoria "outros" — só visível no admin, reaproveitável em orçamentos futuros */
+  if(!CDP.outros)CDP.outros=[];
+  const maxN=CDP.outros.reduce((m,it)=>{
+    const n=+String(it.id).slice(1);
+    return Number.isFinite(n)&&n>m?n:m;
+  },0);
+  const cdpId='O'+(maxN+1);
+  const gNum=parseFloat(g)||1;
+  const cdpItem={id:cdpId,nome,base:gNum,preco,fixo:true,visivelSite:false,...(desc?{desc}:{})};
+  CDP.outros.push(cdpItem);ALL[cdpId]=cdpItem;
+  persistCdpItem('outros',cdpItem,CDP.outros.length);
+  renderAdminCdp();
   aOrcMarmitas.push({partes:[{nome,g:g||'',preco,tipo:'extra',desc}],preco,obs:desc||'',curState:null});
+  const savedIdx=aOrcMarmitas.length-1;
   ['aorc-ext-nome','aorc-ext-g','aorc-ext-preco','aorc-ext-desc'].forEach(id=>{const el=$(id);if(el)el.value='';});
   const f=$('aorc-extra-form');if(f)f.style.display='none';
   aOrcRenderChips();aOrcRefreshTotal();
-  toast('Marmita adicionada ✓');
-  setTimeout(()=>scrollSmoothTo($('aorc-chips'),'top'),120);
+  toast('"'+nome+'" adicionado ao cardápio e à lista de marmitas ✓');
+  setTimeout(()=>scrollSmoothTo($('aorc-chip-'+savedIdx),'top'),120);
 }
 function aOrcDelExtra(i){
   aOrcExtras.splice(i,1);
@@ -2985,7 +3003,7 @@ function aOrcRenderBuilder(){
 }
 function renderAdminOrc(){
   const sec=$('admin-section-orcamento');if(!sec)return;
-  aOrcMarmitas=[];aOrcExtras=[];_aOrcOrdemSalva=false;Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});
+  aOrcMarmitas=[];aOrcExtras=[];_aOrcOrdemSalva=false;_aOrcSavedId=null;Object.assign(aOrcCur,{carbo:[],prot:[],leg:[],esp:null,sopa:null,assado:null,carboCustom:[],protCustom:[],legCustom:[]});Object.assign(aOrcCustomFormOpen,{carbo:false,prot:false,leg:false});
   const zonaOpts=ZONAS.map(z=>`<option value="${z.key}">${z.nome} — ${z.taxa===0?'Grátis':'R$ '+z.taxa}</option>`).join('');
   const hoje=new Date().toISOString().slice(0,10);
   sec.innerHTML=`
@@ -3035,28 +3053,25 @@ function aOrcGoRes(){
   const zonaNome=zona?.nome||'—';const taxa=zona?.taxa||0;
   const endereco=($('aorc-end')?.value||'').trim()||'A informar';
   const dataFmt=data?new Date(data+'T12:00:00').toLocaleDateString('pt-BR'):new Date().toLocaleDateString('pt-BR');
-  const _isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
-  const _toExtra=m=>({nome:m.partes[0].nome,g:m.partes[0].g||'',preco:m.preco,desc:m.obs||''});
-  const regularMs=aOrcMarmitas.filter(m=>!_isExtraM(m));
-  const allExtras=[...aOrcMarmitas.filter(_isExtraM).map(_toExtra),...aOrcExtras];
   const mSub=aOrcMarmitas.reduce((a,m)=>a+m.preco,0);
   const eSub=aOrcExtras.reduce((a,e)=>a+e.preco,0);
   const sub=mSub+eSub;
   const total=sub+taxa;
   // cache para uso em aOrcSalvar e aOrcBaixarPDF sem depender do DOM oculto
-  _aOrcSnap={nome,tel,data,dataFmt,zonaKey,zonaNome,taxa,endereco,sub,total,marmitas:JSON.parse(JSON.stringify(regularMs)),extras:JSON.parse(JSON.stringify(allExtras))};
+  _aOrcSnap={nome,tel,data,dataFmt,zonaKey,zonaNome,taxa,endereco,sub,total,marmitas:JSON.parse(JSON.stringify(aOrcMarmitas)),extras:JSON.parse(JSON.stringify(aOrcExtras))};
   const clientHtml=`
     <div><div class="rcl">Cliente</div><div class="rcv">${nome}</div></div>
     <div><div class="rcl">WhatsApp</div><div class="rcv">${tel}</div></div>
     <div><div class="rcl">Data</div><div class="rcv">${dataFmt}</div></div>
     <div><div class="rcl">Região</div><div class="rcv">${zonaNome}</div></div>
     <div style="grid-column:1/-1"><div class="rcl">Endereço de entrega</div><div class="rcv">${endereco}</div></div>`;
-  const msHtml=regularMs.map((m,i)=>`
+  const msHtml=aOrcMarmitas.map((m,i)=>`
     <div class="res-m"><div class="res-m-head"><span class="res-m-num">Marmita #${i+1}</span><span class="res-m-price">${fR(m.preco)}</span></div>
     <div class="res-m-items">${m.partes.map(p=>`<div class="res-m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}</div>
+    ${_marmitaTotalG(m)>0?`<div style="font-size:11px;font-weight:700;font-style:italic;color:var(--txt3);margin-top:2px">Total: ${_marmitaTotalG(m)}g</div>`:''}
     ${m.obs?`<div style="padding:6px 14px 8px;font-size:12px;color:var(--g700);background:var(--g50);border-top:1px solid var(--borda)"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}</div>`).join('')+
-    (allExtras.length?`<div style="margin-top:10px;padding-top:10px;border-top:2px dashed var(--borda)"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:6px">Itens personalizados</div>`+
-      allExtras.map(e=>`<div class="res-m" style="margin-bottom:6px"><div class="res-m-head"><span class="res-m-num">${e.nome}</span><span class="res-m-price">${fR(e.preco)}</span></div>${e.g||e.desc?`<div class="res-m-items">${e.g?`<div class="res-m-item" style="font-style:italic;color:var(--txt3)">${e.g}</div>`:''} ${e.desc?`<div class="res-m-item">${e.desc}</div>`:''}</div>`:''}</div>`).join('')+`</div>`:'');
+    (aOrcExtras.length?`<div style="margin-top:10px;padding-top:10px;border-top:2px dashed var(--borda)"><div style="font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--txt3);margin-bottom:6px">Itens personalizados</div>`+
+      aOrcExtras.map(e=>`<div class="res-m" style="margin-bottom:6px"><div class="res-m-head"><span class="res-m-num">${e.nome}</span><span class="res-m-price">${fR(e.preco)}</span></div>${e.g||e.desc?`<div class="res-m-items">${e.g?`<div class="res-m-item" style="font-style:italic;color:var(--txt3)">${e.g}</div>`:''} ${e.desc?`<div class="res-m-item">${e.desc}</div>`:''}</div>`:''}</div>`).join('')+`</div>`:'');
   const totsHtml=`
     <div class="res-tr"><span>Subtotal</span><span>${fR(sub)}</span></div>
     <div class="res-tr"><span>Taxa de entrega (${zonaNome})</span><span>${fR(taxa)}</span></div>
@@ -3095,21 +3110,19 @@ function aOrcBuildTxt(){
   const zona=ZONAS.find(z=>z.key===zonaKey);
   const zonaNome=zona?.nome||'—';const taxa=zona?.taxa||0;
   const endereco=($('aorc-end')?.value||'').trim()||'A informar';
-  const _isExtraM=m=>m.partes?.length===1&&m.partes[0]?.tipo==='extra';
-  const _toExtra=m=>({nome:m.partes[0].nome,g:m.partes[0].g||'',preco:m.preco,desc:m.obs||''});
-  const regularMs=aOrcMarmitas.filter(m=>!_isExtraM(m));
-  const allExtras=[...aOrcMarmitas.filter(_isExtraM).map(_toExtra),...aOrcExtras];
   const mSub=aOrcMarmitas.reduce((a,m)=>a+m.preco,0);
   const eSub=aOrcExtras.reduce((a,e)=>a+e.preco,0);
   const sub=mSub+eSub;
   const total=sub+taxa;
-  const lines=regularMs.map((m,i)=>{
+  const lines=aOrcMarmitas.map((m,i)=>{
     const itens=m.partes.map(p=>`    · ${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}`).join('\n');
+    const gTotal=_marmitaTotalG(m);
+    const gLine=gTotal>0?`\n    _Total: ${gTotal}g_`:'';
     const obsLine=m.obs?`\n    Obs: ${m.obs}`:'';
-    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}${obsLine}`;
+    return `  Marmita #${i+1} — ${fR(m.preco)}\n${itens}${gLine}${obsLine}`;
   }).join('\n\n');
-  const extLines=allExtras.length?'\n\n  — Itens personalizados —\n'+allExtras.map(e=>`  ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco)}${e.desc?'\n    '+e.desc:''}`).join('\n'):'';
-  return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${nome}\nWhatsApp: ${tel}\nData: ${dataFmt}\nTotal: ${regularMs.length} marmita${regularMs.length!==1?'s':''}\n\n${lines}${extLines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${endereco}`;
+  const extLines=aOrcExtras.length?'\n\n  — Itens personalizados —\n'+aOrcExtras.map(e=>`  ${e.nome}${e.g?` (${e.g})`:''} — ${fR(e.preco)}${e.desc?'\n    '+e.desc:''}`).join('\n'):'';
+  return `🍱 *Orçamento Mermita's*\n*Marmita Fitness Caseira*\n\nCliente: ${nome}\nWhatsApp: ${tel}\nData: ${dataFmt}\nTotal: ${aOrcMarmitas.length} marmita${aOrcMarmitas.length!==1?'s':''}\n\n${lines}${extLines}\nTaxa de entrega: ${fR(taxa)}\n\n*TOTAL: ${fR(total)}*\n\nEndereço: ${endereco}`;
 }
 function aOrcCopyOrc(){navigator.clipboard.writeText(aOrcBuildTxt()).then(()=>toast('Orçamento copiado ✓'))}
 function aOrcSendWpp(){
@@ -3132,7 +3145,9 @@ async function aOrcSalvar(btn){
   const extras=d.extras?.length?d.extras:JSON.parse(JSON.stringify(aOrcExtras));
   const sub=marmitas.reduce((a,m)=>a+m.preco,0)+extras.reduce((a,e)=>a+e.preco,0);
   const total=sub+taxa;
-  const id='ord_'+Date.now()+'_'+Math.random().toString(36).slice(2,6);
+  /* reaproveita o id já salvo desse orçamento — evita duplicar pedido quando
+     "Baixar PDF" (que salva sozinho) é clicado mais de uma vez */
+  const id=_aOrcSavedId||('ord_'+Date.now()+'_'+Math.random().toString(36).slice(2,6));
 
   // tenta encontrar o user_id do cliente cadastrado pelo telefone (víncula ao perfil)
   let userId=null;
@@ -3153,17 +3168,19 @@ async function aOrcSalvar(btn){
     cupom:null,subtotal:sub,total,extras,status:'novo'
   };
 
-  const{error}=await sb.from('pedidos').insert(payload);
+  const{error}=await sb.from('pedidos').upsert(payload);
   if(btn){btn.textContent='Salvar como pedido ✓';btn.disabled=false;}
 
   if(error){
     console.error('Supabase error code:',error.code,'msg:',error.message,'details:',error.details);
     // salva localmente como fallback
     const local=JSON.parse(localStorage.getItem('mermitas_pedidos_local')||'[]');
-    local.unshift({...payload,created_at:new Date().toISOString(),_local:true});
+    const idx=local.findIndex(o=>o.id===id);
+    const entry={...payload,created_at:new Date().toISOString(),_local:true};
+    if(idx>=0)local[idx]=entry;else local.unshift(entry);
     localStorage.setItem('mermitas_pedidos_local',JSON.stringify(local));
     await loadAdminOrders();
-    _aOrcOrdemSalva=true;
+    _aOrcOrdemSalva=true;_aOrcSavedId=id;
     if(btn){btn.textContent='Salvo localmente ✓';setTimeout(()=>{if(btn)btn.textContent='Salvar como pedido ✓';},3000);}
     toast('Salvo localmente — verifique o console para detalhes do erro Supabase');
     // mostra instrução detalhada
@@ -3171,7 +3188,7 @@ async function aOrcSalvar(btn){
     setTimeout(()=>alert(msg),100);
     return;
   }
-  _aOrcOrdemSalva=true;
+  _aOrcOrdemSalva=true;_aOrcSavedId=id;
   toast('Pedido de '+nome+' salvo'+(userId?' e vinculado ao perfil do cliente':'')+' ✓');
   await loadAdminOrders();
 }
@@ -3192,7 +3209,7 @@ async function aOrcBaixarPDF(){
     <div class="marmita">
       <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
       ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
-      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;color:#2D8050;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
+      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
       ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
     </div>`).join('')+
     ((d.extras||[]).length?`<div style="margin-top:14px;padding-top:10px;border-top:2px dashed #d4ede0"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6B8070;margin-bottom:8px">Itens personalizados</div>`+
@@ -3488,6 +3505,44 @@ function adminOrcPara(ci){
     if($('aorc-end'))$('aorc-end').value=c.endereco||'';
     aOrcRefreshTotal();
   },100);
+}
+async function adminOrderPDF(id){
+  const o=adminOrders.find(x=>x.id===id);if(!o)return;
+  toast('Gerando PDF…');
+  const logoB64=await _imgBase64('/marmitalogo.png');
+  const logoHtml=logoB64?`<img class="logo" src="${logoB64}" alt="Logo">`:'';
+  const dt=new Date(o.timestamp).toLocaleDateString('pt-BR');
+  const extraTotal=(o.extras||[]).reduce((a,e)=>a+e.preco,0);
+  const grandTotal=o.total+extraTotal;
+  const msHtml=o.marmitas.map((m,i)=>`
+    <div class="marmita">
+      <div class="m-head"><span>Marmita #${i+1}</span><span>${fR(m.preco)}</span></div>
+      ${(m.partes||[]).map(p=>`<div class="m-item">${p.nome}${p.g?` (${p.g}g)`:''} — ${fR(p.preco)}</div>`).join('')}
+      ${_marmitaTotalG(m)>0?`<div class="m-total-g" style="font-size:11px;font-weight:700;font-style:italic;color:#6B8070;margin-top:4px;padding:0 14px 5px">Total: ${_marmitaTotalG(m)}g</div>`:''}
+      ${m.obs?`<div class="m-obs"><span style="font-weight:700;color:var(--g800)">Obs:</span> ${m.obs}</div>`:''}
+    </div>`).join('')+
+    ((o.extras||[]).length?`<div style="margin-top:14px;padding-top:10px;border-top:2px dashed #d4ede0"><div style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:#6B8070;margin-bottom:8px">Itens personalizados</div>`+
+      (o.extras||[]).map(e=>{const gFmt=e.g?(/^\d+(\.\d+)?$/.test(String(e.g).trim())?e.g+'g':e.g):'';const partes=[e.desc,gFmt?`(${gFmt})`:null].filter(Boolean).join(' ');const linha=partes?`${partes} — ${fR(e.preco)}`:fR(e.preco);return`<div class="marmita"><div class="m-head"><span>${e.nome}</span><span>${fR(e.preco)}</span></div><div class="m-item">${linha}</div></div>`;}).join('')+`</div>`:'');
+  const w=window.open('','_blank','width=820,height=960');
+  w.document.write(_pdfTemplate({logoHtml,nome:o.client.nome||'—',tel:o.client.tel||'—',dataFmt:dt,zonaNome:o.client.zonaNome||'—',endereco:o.client.endereco||'A informar',msHtml,sub:o.subtotal||0,taxa:o.client.taxa||0,total:grandTotal,cupomHtml:''}));
+  w.document.close();
+}
+function aOrcUsarBaseOrder(id){
+  const o=adminOrders.find(x=>x.id===id);if(!o)return;
+  showAdminTab('orcamento');
+  setTimeout(()=>{
+    if($('aorc-nome'))$('aorc-nome').value=o.client.nome||'';
+    if($('aorc-tel'))$('aorc-tel').value=o.client.tel||'';
+    if($('aorc-zona'))$('aorc-zona').value=o.client.zona||'';
+    if($('aorc-end'))$('aorc-end').value=o.client.endereco||'';
+    aOrcRefreshTotal();
+    if(o.marmitas?.length||o.extras?.length){
+      aOrcMarmitas=JSON.parse(JSON.stringify(o.marmitas||[]));
+      (o.extras||[]).forEach(e=>aOrcMarmitas.push({partes:[{nome:e.nome,g:e.g||'',preco:e.preco||0,tipo:'extra',desc:e.desc||''}],preco:e.preco||0,obs:e.desc||'',curState:null}));
+      aOrcRenderChips();aOrcRefreshTotal();
+    }
+    toast('Pedido de '+o.client.nome+' carregado ✓');
+  },150);
 }
 function adminWppCliente(tel){
   const t=(tel||'').replace(/\D/g,'');
